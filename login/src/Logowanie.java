@@ -46,6 +46,7 @@ public class Logowanie implements Runnable {
                 }
             } catch (SQLException e) {
                 System.err.println("Błąd.");
+                e.printStackTrace();
             }
         } catch (IOException e) {
             System.err.println("Błąd." + e.getMessage());
