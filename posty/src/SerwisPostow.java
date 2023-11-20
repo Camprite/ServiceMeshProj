@@ -6,6 +6,7 @@ import java.util.Properties;
 
 public class SerwisPostow {
     public static void main(String[] args) {
+        System.out.println("SerwisPostow");
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));

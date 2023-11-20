@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="rejestracja:jar">
+    <output-path>$PROJECT_DIR$/jarFiles</output-path>
+    <root id="archive" name="rejestracja.jar">
+      <element id="module-output" name="rejestracja" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/mysql-connector-j-8.2.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

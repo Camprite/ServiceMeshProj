@@ -110,6 +110,7 @@ public class ApiGateway {
                     output.flush();
                 } catch (IOException e) {
                     System.err.println("Błędne żądanie przekierowania.");
+                    e.printStackTrace();
                     waitForUserInput();
                 }
             }

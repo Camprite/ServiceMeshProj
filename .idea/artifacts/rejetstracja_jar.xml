@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="rejetstracja:jar">
-    <output-path>$PROJECT_DIR$/jarFiles</output-path>
-    <root id="archive" name="rejetstracja.jar">
-      <element id="module-output" name="rejetstracja" />
-    </root>
-  </artifact>
-</component>

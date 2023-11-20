@@ -6,6 +6,7 @@ import java.util.Properties;
 
 public class SerwisPlikow {
     public static void main(String[] args) {
+        System.out.println("SerwisPlikow");
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));

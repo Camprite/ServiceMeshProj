@@ -15,6 +15,7 @@ import java.util.Scanner;
 
 public class Manager {
     public static void main(String[] args) throws InterruptedException {
+        System.out.println("SerwisMenagera");
         String APIGatewayPath = System.getProperty("user.dir") + "\\apigateway.jar";
         String LoginAPIPath = System.getProperty("user.dir") + "\\login.jar";
         String RegisterAPIPath = System.getProperty("user.dir") + "\\rejestracja.jar";
@@ -23,64 +24,41 @@ public class Manager {
         String InterfacePath = System.getProperty("user.dir") + "\\Interfejs.jar";
         System.out.println(APIGatewayPath);
 
-        ProcessBuilder processBuilder = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  APIGatewayPath);
-        processBuilder.redirectErrorStream(true);
-
         ProcessBuilder processBuilderLogin = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  LoginAPIPath);
-        processBuilderLogin.redirectErrorStream(true);
+
 
         ProcessBuilder processBuilderRegister = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  RegisterAPIPath);
-        processBuilderRegister.redirectErrorStream(true);
 
-        ProcessBuilder processBuilderInterfejs = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  InterfacePath);
-        processBuilderRegister.redirectErrorStream(true);
+
 
         ProcessBuilder processBuilderPosts = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  PostsAPIPath);
-        processBuilderRegister.redirectErrorStream(true);
 
         ProcessBuilder processBuilderFiles = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  FilesAPIPath);
-        processBuilderRegister.redirectErrorStream(true);
+
+        ProcessBuilder processBuilder = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  APIGatewayPath);
+
+
+        ProcessBuilder processBuilderInterfejs = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  InterfacePath);
+
+
 
 
         try {
-            Process process = processBuilder.start();
+            Process processRegister = processBuilderRegister.start();
+
+            Process processGateway = processBuilder.start();
 
             Process processLogin = processBuilderLogin.start();
 
-            Process processRegister = processBuilderRegister.start();
 
             Process  processInterfejs = processBuilderInterfejs.start();
 
             Process processPosts = processBuilderPosts.start();
 
             Process processFiles = processBuilderFiles.start();
-            System.out.println(process.toString());
 
 
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader readerLogin = new BufferedReader(new InputStreamReader(processLogin.getInputStream()));
-            BufferedReader readerRegister = new BufferedReader(new InputStreamReader(processRegister.getInputStream()));
-            String line = null;
-            String lineLogin = null;
-            String lineRegister = null;
-            while ((line = reader.readLine()) != null || (lineLogin = readerLogin.readLine()) != null || (lineRegister = readerRegister.readLine()) != null ) {
-                System.out.println("[API] isAlive: " + process.isAlive());
-                System.out.println("[LOGIN] isAlive: " + processLogin.isAlive());
-                System.out.println("[REGISTER] isAlive: " + processRegister.isAlive());
-                System.out.println("[API]" + line);
-                System.out.println("[LOGIN]" + lineLogin);
-                System.out.println("[REGISTER]" + lineRegister);
-            }
-            // Oczekiwanie na zakończenie procesu
-            int exitCode = process.waitFor();
-            int exitCodeLogin = processLogin.waitFor();
-            int exitCodeRegister = processRegister.waitFor();
-            System.out.println("[API]Proces zakończony z kodem: " + exitCode);
-            System.out.println("[LOGIN]Proces zakończony z kodem: " + exitCodeLogin);
-            System.out.println("[REGISTER]Proces zakończony z kodem: " + exitCodeRegister);
-
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         waitForUserInput();
