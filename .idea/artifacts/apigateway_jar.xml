@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="apigateway:jar">
+    <output-path>$PROJECT_DIR$/jarFiles</output-path>
+    <root id="archive" name="apigateway.jar">
+      <element id="module-output" name="apigateway" />
+    </root>
+  </artifact>
+</component>

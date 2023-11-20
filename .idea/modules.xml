@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Interfejs/Interfejs.iml" filepath="$PROJECT_DIR$/Interfejs/Interfejs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServiceMesh.iml" filepath="$PROJECT_DIR$/ServiceMesh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent/agent.iml" filepath="$PROJECT_DIR$/agent/agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apigateway/apigateway.iml" filepath="$PROJECT_DIR$/apigateway/apigateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/login/login.iml" filepath="$PROJECT_DIR$/login/login.iml" />
+      <module fileurl="file://$PROJECT_DIR$/manager/manager.iml" filepath="$PROJECT_DIR$/manager/manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pliki/pliki.iml" filepath="$PROJECT_DIR$/pliki/pliki.iml" />
+      <module fileurl="file://$PROJECT_DIR$/posty/posty.iml" filepath="$PROJECT_DIR$/posty/posty.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rejetstracja/rejetstracja.iml" filepath="$PROJECT_DIR$/rejetstracja/rejetstracja.iml" />
+      <module fileurl="file://$PROJECT_DIR$/testing/testing.iml" filepath="$PROJECT_DIR$/testing/testing.iml" />
+    </modules>
+  </component>
+</project>

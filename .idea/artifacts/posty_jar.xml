@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="posty:jar">
+    <output-path>$PROJECT_DIR$/jarFiles</output-path>
+    <root id="archive" name="posty.jar">
+      <element id="module-output" name="posty" />
+    </root>
+  </artifact>
+</component>

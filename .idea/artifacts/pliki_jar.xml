@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="pliki:jar">
+    <output-path>$PROJECT_DIR$/jarFiles</output-path>
+    <root id="archive" name="pliki.jar">
+      <element id="module-output" name="pliki" />
+    </root>
+  </artifact>
+</component>
