@@ -15,6 +15,43 @@ import java.util.Scanner;
 
 public class Manager {
     public static void main(String[] args) throws InterruptedException {
+
+        String AgentPath = System.getProperty("user.dir") + "\\apigateway.jar";
+
+        ProcessBuilder pbAPIGatewayAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9010", "localhost");
+        ProcessBuilder pbLoginRegisterAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9020", "localhost");
+        ProcessBuilder pbPostsAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9030", "localhost");
+
+        try {
+            Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
+            Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
+            Process ProcPostsAgent = pbPostsAgent.start();
+
+            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
+                throw new Exception("Agent has been not opened");
+            }
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        waitForUserInput();
+
+
+//        Process builder dla 3 agentów
+//        Połączenie do 3 agentów
+//          Wysłanie agentom żądzanie otwarcia procesów
+//
+//
+
+
+
+
+
+
         System.out.println("SerwisMenagera");
         String APIGatewayPath = System.getProperty("user.dir") + "\\apigateway.jar";
         String LoginAPIPath = System.getProperty("user.dir") + "\\login.jar";
@@ -24,7 +61,8 @@ public class Manager {
         String InterfacePath = System.getProperty("user.dir") + "\\Interfejs.jar";
         System.out.println(APIGatewayPath);
 
-        ProcessBuilder processBuilderLogin = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  LoginAPIPath);
+        ProcessBuilder processBuilderLogin = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  LoginAPIPath , "9002", "localhost");
+        ProcessBuilder processBuilderLogin2 = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  LoginAPIPath , "9012", "localhost");
 
 
         ProcessBuilder processBuilderRegister = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  RegisterAPIPath);
@@ -49,6 +87,7 @@ public class Manager {
             Process processGateway = processBuilder.start();
 
             Process processLogin = processBuilderLogin.start();
+            Process processLogin2 = processBuilderLogin2.start();
 
 
             Process  processInterfejs = processBuilderInterfejs.start();

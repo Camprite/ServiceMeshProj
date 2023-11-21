@@ -6,9 +6,18 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class SerwisLogowania {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
+        if(args[0] == null || args[1] == null){
+            waitForUserInput();
+            throw new Exception("Brak zdefioniowanych portów");
+        }
         System.out.println("SerwisLogowania");
+        String port = args[0];
+        String ip = args[1];
+        System.out.println("PORT: " + port);
+        System.out.println("IP: " + ip);
+
 
         Properties properties = new Properties();
         try {
@@ -18,11 +27,13 @@ public class SerwisLogowania {
             waitForUserInput();
         }
 
-        int loginPort = Integer.parseInt(properties.getProperty("login.service.port"));
+//        int loginPort = Integer.parseInt(properties.getProperty("login.service.port")); CHANGED
+        int loginPort = Integer.parseInt(port);
 
         try (ServerSocket serverSocket = new ServerSocket(loginPort)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("NEW CLIENT");
                 new Thread(new Logowanie(clientSocket)).start();
             }
         } catch (IOException e) {
