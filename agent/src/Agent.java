@@ -27,7 +27,7 @@ public class Agent {
                 System.out.println("resquest given");
                 String[] managerData = requestFromManager.split(";");
                 if(managerData[0] == "start"){
-                    System.out.println("startuje: "+ managerData[1]);
+                    System.out.println("Startuje: "+ managerData[1]);
                     String ExecPath = System.getProperty("user.dir") + "\\" + managerData[1];
                     ProcessBuilder process = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  ExecPath , "9000", "localhost");
                     Process proc = process.start();
