@@ -24,7 +24,7 @@ public class Agent {
             String requestFromManager = input.readLine();
 
             if(requestFromManager.length()>0){
-                System.out.println("resquest given");
+                System.out.println("resquest give");
                 String[] managerData = requestFromManager.split(";");
                 if(managerData[0] == "start"){
                     System.out.println("startuje: "+ managerData[1]);
