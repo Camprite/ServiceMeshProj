@@ -7,16 +7,9 @@ import java.util.Scanner;
 
 public class ApiGateway {
 
-  public static ArrayList<String> LoginServicesPorts = new ArrayList<>();
-
-  public static int LoginServicesPortsIteration = 0;
 
 
     public static void main(String[] args) {
-
-        System.out.println("ApiGateway");
-        LoginServicesPorts.add("9002");
-        LoginServicesPorts.add("9012");
 
         Properties properties = new Properties();
         try {
@@ -25,6 +18,20 @@ public class ApiGateway {
             System.err.println("Plik konfiguracyjny nie załadował się.");
             waitForUserInput();
         }
+
+        try (Socket socket = new Socket("localhost", 9010);
+             PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            output.write("Message from api ");
+            output.flush();
+            System.out.println("połączono");
+            Thread.sleep(3000);
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Błąd połączenia z Agentem." + e.getMessage());
+            waitForUserInput();
+        }
+
 
         int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port")); //NOT TO CHANGE
 
@@ -65,11 +72,7 @@ public class ApiGateway {
                     targetServicePort = properties.getProperty("login.service.port");
                     targetServiceIP = properties.getProperty("login.service.ip");
 
-                    targetServicePort = LoginServicesPorts.get(LoginServicesPortsIteration);
-                    LoginServicesPortsIteration++;
-                    if(LoginServicesPortsIteration> LoginServicesPorts.size()){
-                        LoginServicesPortsIteration = 0;
-                    }
+
                 }
                 case "post", "czytaj-posts" -> {
                     targetServicePort = properties.getProperty("post.service.port");
@@ -78,12 +81,6 @@ public class ApiGateway {
                 case "wgraj_plik", "pobierz_plik" -> {
                     targetServicePort = properties.getProperty("file.service.port");
                     targetServiceIP = properties.getProperty("file.service.ip");
-                }
-                case "addLoginPort" -> {  //ADDED
-                    requestParts[1] = "9002";
-                    LoginServicesPorts.add(requestParts[1]);
-                    targetServicePort = null;
-                    targetServiceIP = null;
                 }
                 default -> {
                     System.out.println("Błąd. Nieznany typ zapytania.");
