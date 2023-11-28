@@ -53,7 +53,7 @@ public class Interfejs {
             String dane;
             String login = "";
             String haslo;
-
+            String message_id="";
             switch (wybor) {
                 case "REJESTRACJA" -> {
                     if (obecnyUser.equals("")) {
@@ -76,6 +76,7 @@ public class Interfejs {
                         System.out.print("Hasło: ");
                         haslo = scanner.nextLine();
                         dane = login + ";" + haslo;
+                        message_id= String.valueOf(dane.hashCode());
                     } else {
                         System.out.println("Proszę, wybierz poprawną opcję");
                         continue;
@@ -88,7 +89,7 @@ public class Interfejs {
                     }
                     typ = "post";
                     System.out.print("Treść posta: ");
-                    dane = obecnyUser + ";" + scanner.nextLine();
+                    dane = obecnyUser + " " + scanner.nextLine();
                 }
                 case "CZYTAJ-POSTS" -> {
                     if (obecnyUser.equals("")) {
@@ -113,7 +114,7 @@ public class Interfejs {
                     }
                     System.out.print("Nazwa pliku: ");
                     celnazwaPliku = scanner.nextLine();
-                    dane = obecnyUser + ";" + sciezkaPliku;
+                    dane = obecnyUser + " " + sciezkaPliku;
                 }
                 case "POBIERZ" -> {
                     if (obecnyUser.equals("")) {
@@ -123,7 +124,7 @@ public class Interfejs {
                     typ = "pobierz_plik";
                     System.out.print("Nazwa pliku który chcesz pobrać: ");
                     String nazwaPliku = scanner.nextLine();
-                    dane = obecnyUser + ";" + nazwaPliku;
+                    dane = obecnyUser + " " + nazwaPliku;
                 }
                 default -> {
                     System.out.println("Proszę, wybierz poprawną opcję");
@@ -131,7 +132,7 @@ public class Interfejs {
                 }
             }
 
-            String request = typ + ";" + dane;
+            String request = "Type:"+" "+ typ +"Message_id:"+ " "+message_id+"Line:"+ " " + dane;
 
             String response = sendRequestToApiGateway(request);
 
@@ -168,9 +169,9 @@ public class Interfejs {
         int apiGatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port"));
         String apiGatewayIP = properties.getProperty("api.gateway.ip");
 
-        String[] requestPart = request.split(";");
-        if (requestPart[0].equals("wgraj_plik")) {
-            String sciezkaPliku = requestPart[2];
+        String[] requestPart = request.split(" ");
+        if (requestPart[1].equals("wgraj_plik")) {
+            String sciezkaPliku = requestPart[6];
             try {
                 byte[] fileBytes = Files.readAllBytes(Paths.get(sciezkaPliku));
                 String encodedFile = Base64.getEncoder().encodeToString(fileBytes);
@@ -188,7 +189,7 @@ public class Interfejs {
                 System.err.println("Błąd połączenia z ApiGateway." + e.getMessage());
                 return "Błąd połączenia z ApiGateway.";
             }
-        } else if (requestPart[0].equals("pobierz_plik")) {
+        } else if (requestPart[1].equals("pobierz_plik")) {
             try (Socket socket = new Socket(apiGatewayIP, apiGatewayPort);
                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {

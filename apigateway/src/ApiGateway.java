@@ -47,8 +47,8 @@ public class ApiGateway {
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             String request = input.readLine();
-            String[] requestParts = request.split(";", 2);
-            String requestType = requestParts[0];
+            String[] requestParts = request.split(" " );
+            String requestType = requestParts[1];
 
             String targetServicePort;
             String targetServiceIP;
@@ -80,8 +80,8 @@ public class ApiGateway {
                     targetServiceIP = properties.getProperty("file.service.ip");
                 }
                 case "addLoginPort" -> {  //ADDED
-                    requestParts[1] = "9002";
-                    LoginServicesPorts.add(requestParts[1]);
+                    requestParts[5] = "9002";
+                    LoginServicesPorts.add(requestParts[5]);
                     targetServicePort = null;
                     targetServiceIP = null;
                 }
@@ -97,7 +97,7 @@ public class ApiGateway {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
                      PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                      BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
-                    String[] parts = request.split(";");
+                    String[] parts = request.split(" ");
                     String destinationFileName = parts[parts.length - 2];
                     String encodedFile = parts[parts.length - 1];
 
