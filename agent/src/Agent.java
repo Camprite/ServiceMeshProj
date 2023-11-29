@@ -26,7 +26,7 @@ public class Agent {
             output.write("ServiceType: " +ServiceNameList);
             output.flush();
             System.out.println("połączono");
-            Thread.sleep(3000);
+//            Thread.sleep(3000);
 
         } catch (IOException e) {
             System.err.println("Błąd połączenia z Managerem." + e.getMessage());

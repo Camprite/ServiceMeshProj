@@ -55,9 +55,12 @@ public class Manager {
             Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
             Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
             Process ProcPostsAgent = pbPostsAgent.start();
-            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
-                throw new Exception("Agent has been not opened");
-            }
+//            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
+//                System.out.printf("isAlive ProcAPIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
+//                System.out.printf("isAlive ProcLoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
+//                System.out.printf("isAlive ProcPostsAgent: " + ProcPostsAgent.isAlive());
+//                throw new Exception("Agent has been not opened");
+//            }
         } catch (IOException e) {
             e.printStackTrace();
             waitForUserInput();
