@@ -24,6 +24,8 @@ public class Agent {
              PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
+
+
 //            --------------------------------------Register to Manager request--------------------------------------
 //            type: initiation_request
 //            message_id: [integer]
@@ -36,6 +38,51 @@ public class Agent {
             );
             System.out.println("wysłano request");
 //    ---------------------------------------------Register to Manager END--------------------------------------------------
+//            "type:execution_request;" +
+//                    "message_id:0;" +
+//                    "agent_network_address:none;" +
+//                    "service_name:ApiGateway.jar;" +
+//                    "service_instance_id:1;" +
+//                    "socket_configuration:none;" +
+//                    "plug_configuration:none");
+
+            try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(agentPort))) {
+                while (true) {
+
+                    String request = input.readLine();
+                    System.out.println(request);
+                    try {
+                        String[] ManagerData = request.split(";");
+                        String[] requestType = ManagerData[0].split(":");
+                        if(requestType[1].equals("execution_request")){
+                            System.out.println("execution request has been detected");
+                            String servicePath =  System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
+                            ProcessBuilder ApiGateway = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  servicePath);
+                            Process API = ApiGateway.start();
+
+                        }
+                        Socket clientSocket = serverSocket.accept();
+                        System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
+                        new Thread(new MicroserviceThread(clientSocket)).start();
+
+                    }catch (Exception e){
+                        System.out.println("wyrzucilo wyjątek");
+                    }
+
+                }
+            } catch (IOException e) {
+                System.err.println("500;Login Service ERROR. " + e.getMessage());
+                waitForUserInput();
+            }
+
+
+
+
+//                while (true){
+//
+//                }
+
+
 
             //            output.print("TRSTTAS");
 //            int i = 0;
@@ -61,16 +108,7 @@ public class Agent {
 
 
 
-        try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(agentPort))) {
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
-                new Thread(new MicroserviceThread(clientSocket)).start();
-            }
-        } catch (IOException e) {
-            System.err.println("500;Login Service ERROR. " + e.getMessage());
-            waitForUserInput();
-        }
+
 
 
         waitForUserInput();
@@ -98,20 +136,24 @@ public class Agent {
 
             try (BufferedReader input = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()));
                  PrintWriter output = new PrintWriter(microserviceSocket.getOutputStream(), true)) {
-                    String request = input.readLine();
-                    try{
-                       String[] ManagerData = request.split(";");
-                       String[] RequestType = ManagerData[0].split(":");
-                       if(RequestType[1].equals("execution_request")){
-                           System.out.println("execution request has been detected");
-                       }
+
+                while (true) {
+                        String request = input.readLine();
+                    if(request != null){
+                    System.out.println(request);
+                    try {
+                        String[] ManagerData = request.split(";");
+                        String[] RequestType = ManagerData[0].split(":");
+                        if (RequestType[1].equals("execution_request")) {
+                            System.out.println("execution request has been detected");
+                        }
 
 
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         System.out.println("Błędny typ requesta");
-                    }
+                    }}
 
-
+                }
 
             } catch (IOException e) {
                 System.err.println("Błąd." + e.getMessage());

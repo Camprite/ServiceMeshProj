@@ -76,12 +76,12 @@ public class Manager {
             Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
             Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
             Process ProcPostsAgent = pbPostsAgent.start();
-//            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
-//                System.out.printf("isAlive ProcAPIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
-//                System.out.printf("isAlive ProcLoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
-//                System.out.printf("isAlive ProcPostsAgent: " + ProcPostsAgent.isAlive());
-//                throw new Exception("Agent has been not opened");
-//            }
+            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
+                System.out.println("isAlive ProcAPIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
+                System.out.println("isAlive ProcLoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
+                System.out.println("isAlive ProcPostsAgent: " + ProcPostsAgent.isAlive());
+                throw new Exception("Agent has been not opened");
+            }
         } catch (IOException e) {
             e.printStackTrace();
             waitForUserInput();
@@ -90,7 +90,6 @@ public class Manager {
             waitForUserInput();
         }
 
-
         try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(ManagerPort))) {
 //            Thread.sleep(1000);
 
@@ -98,6 +97,24 @@ public class Manager {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Agent connected ");
                 new Thread(new AgentThread(clientSocket)).start();
+
+                try {
+                if(Agent0.isConnected()){
+                    System.out.println("Agent0 Im trying to send request to open apiGateway:");
+                                      PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
+                                      output2.println("type:execution_request;" +
+                                             "message_id:0;" +
+                                             "agent_network_address:none;" +
+                                             "service_name:ApiGateway.jar;" +
+                                             "service_instance_id:1;" +
+                                             "socket_configuration:none;" +
+                                             "plug_configuration:none");
+                    output2.flush();
+                }
+                }catch(Exception e){
+
+                    }
+
             }
         } catch (IOException e) {
             System.err.println("500;Login Service ERROR. " + e.getMessage());
@@ -157,15 +174,18 @@ public class Manager {
                                   if(message_id[1].equals("0")){
                                   System.out.println("AGENT 0 HAS BEEN CONECTED TO MANAGER");
                                       Agent0 = this.agentSocket;
-                                      System.out.println("execution_request send");
-                                      output.println("type:execution_request;" +
-                                             "message_id:0;" +
-                                             "agent_network_address:none;" +
-                                             "service_name:ApiGateway.jar;" +
-                                             "service_instance_id:1;" +
-                                             "socket_configuration:none;" +
-                                             "plug_configuration:none");
-                                            output.flush();
+
+//                                      System.out.println("Is output shutdown: "+Agent0.isOutputShutdown());
+//
+//                                      PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
+//                                      output2.println("type:execution_request;" +
+//                                             "message_id:0;" +
+//                                             "agent_network_address:none;" +
+//                                             "service_name:ApiGateway.jar;" +
+//                                             "service_instance_id:1;" +
+//                                             "socket_configuration:none;" +
+//                                             "plug_configuration:none");
+//                                            output.flush();
                                   }
                                   if(message_id[1].equals("1")){
                                   System.out.println("AGENT 1 HAS BEEN CONECTED TO MANAGER");
