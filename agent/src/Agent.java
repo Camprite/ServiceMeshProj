@@ -58,21 +58,22 @@ public class Agent {
                             System.out.println("[REQUEST]" + "execution request has been detected");
                             String servicePath =  System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
                             try {
-                                ProcessBuilder ApiGateway = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  servicePath);
+                                ProcessBuilder ApiGateway = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  servicePath, agentIP, agentPort);
                                 Process API = ApiGateway.start();
                             }catch (Exception e){
                                 System.out.println("[APIGATEWAY] Processbuilder failed");
                             }
 
                         }
-
-                    }catch (Exception e){
-                        System.out.println("[ERROR] Cannot parse request");
-                    }
+                        System.out.println("test");
 //                    CONNECTION SEGMENT
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
                     new Thread(new MicroserviceThread(clientSocket)).start();
+                    }catch (Exception e){
+                        System.out.println("[ERROR] Cannot parse request");
+                    }
+
                 }
             } catch (IOException e) {
                 System.err.println("500;Login Service ERROR. " + e.getMessage());
@@ -116,8 +117,8 @@ public class Agent {
                 while (true) {
                         String request = input.readLine();
                     if(request != null){
-                    System.out.println(request);
-                    try {
+                        System.out.println("[REQUEST]: " + request);
+                        try {
                         String[] ManagerData = request.split(";");
                         String[] RequestType = ManagerData[0].split(":");
                         if (RequestType[1].equals("execution_request")) {
@@ -127,6 +128,7 @@ public class Agent {
 
                     } catch (Exception e) {
                         System.out.println("Błędny typ requesta");
+                        e.printStackTrace();
                     }}
 
                 }

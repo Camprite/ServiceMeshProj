@@ -132,7 +132,8 @@ public class Interfejs {
                 }
             }
 
-            String request = "Type:"+" "+ typ +"Message_id:"+ " "+message_id+"Line:"+ " " + dane;
+            String request = "Type:"+ typ + ";" +"Message_id:"+message_id+ ";" +"Line:" + dane;
+            System.out.println(request);
 
             String response = sendRequestToApiGateway(request);
 
@@ -169,7 +170,7 @@ public class Interfejs {
         int apiGatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port"));
         String apiGatewayIP = properties.getProperty("api.gateway.ip");
 
-        String[] requestPart = request.split(" ");
+        String[] requestPart = request.split(":");
         if (requestPart[1].equals("wgraj_plik")) {
             String sciezkaPliku = requestPart[6];
             try {
