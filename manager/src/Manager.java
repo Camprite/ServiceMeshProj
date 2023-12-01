@@ -56,14 +56,8 @@ public class Manager {
     public static void main(String[] args) throws InterruptedException, IOException {
         String ManagerPort = "9100";
         String ManagerIP = "localhost";
-//        System.out.printf(RequestToCreateApiGatewayMicroservice);
-
-
-
-
-//        String AgentPath = System.getProperty("user.dir") + "\\apigateway.jar";
         String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
-//        System.out.println(AgentPath);
+        Boolean isApiGatwayRequestSended = false;
 
 
 //          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
@@ -76,11 +70,14 @@ public class Manager {
             Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
             Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
             Process ProcPostsAgent = pbPostsAgent.start();
-            if(!ProcAPIGatewayAgent.isAlive()||!ProcLoginRegisterAgent.isAlive()||!ProcPostsAgent.isAlive()){
-                System.out.println("isAlive ProcAPIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
-                System.out.println("isAlive ProcLoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
-                System.out.println("isAlive ProcPostsAgent: " + ProcPostsAgent.isAlive());
-                throw new Exception("Agent has been not opened");
+            if(!ProcAPIGatewayAgent.isAlive() || !ProcLoginRegisterAgent.isAlive() || !ProcPostsAgent.isAlive()){
+            Thread.sleep(200); // Agents need have time to open process
+                System.out.println();
+                System.out.println("isAlive APIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
+                System.out.println("isAlive LoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
+                System.out.println("isAlive PostsAgent: " + ProcPostsAgent.isAlive());
+                System.out.println();
+//                throw new Exception("Agent has been not opened");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -89,17 +86,14 @@ public class Manager {
             e.printStackTrace();
             waitForUserInput();
         }
-
         try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(ManagerPort))) {
-//            Thread.sleep(1000);
-
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Agent connected ");
+                System.out.println("Agent connected \n");
                 new Thread(new AgentThread(clientSocket)).start();
 
                 try {
-                if(Agent0.isConnected()){
+                if(Agent0.isConnected() && !isApiGatwayRequestSended){
                     System.out.println("Agent0 Im trying to send request to open apiGateway:");
                                       PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
                                       output2.println("type:execution_request;" +
@@ -110,6 +104,7 @@ public class Manager {
                                              "socket_configuration:none;" +
                                              "plug_configuration:none");
                     output2.flush();
+                    isApiGatwayRequestSended = true;
                 }
                 }catch(Exception e){
 
@@ -120,22 +115,6 @@ public class Manager {
             System.err.println("500;Login Service ERROR. " + e.getMessage());
             waitForUserInput();
         }
-//        boolean sended = true;
-//        System.out.println("is alive: " + sended);
-//        while (sended) {
-//            if (Agent0.isConnected()) {
-//
-//                output.println("type:initiation_request;" +
-//                        "message_id:" + "agentType" + ";" +
-//                        "agent_network_address:" + "agentPort" + ";" +
-//                        "service_repository: none"
-//                );
-//                System.out.println("wyslane");
-//                sended = false;
-//            }
-//        }
-
-
     }
     private static void waitForUserInput() {
         System.out.println("Press Enter to exit...");
@@ -174,18 +153,6 @@ public class Manager {
                                   if(message_id[1].equals("0")){
                                   System.out.println("AGENT 0 HAS BEEN CONECTED TO MANAGER");
                                       Agent0 = this.agentSocket;
-
-//                                      System.out.println("Is output shutdown: "+Agent0.isOutputShutdown());
-//
-//                                      PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-//                                      output2.println("type:execution_request;" +
-//                                             "message_id:0;" +
-//                                             "agent_network_address:none;" +
-//                                             "service_name:ApiGateway.jar;" +
-//                                             "service_instance_id:1;" +
-//                                             "socket_configuration:none;" +
-//                                             "plug_configuration:none");
-//                                            output.flush();
                                   }
                                   if(message_id[1].equals("1")){
                                   System.out.println("AGENT 1 HAS BEEN CONECTED TO MANAGER");
@@ -207,20 +174,15 @@ public class Manager {
             }catch(IOException e){
             e.printStackTrace();
             }
-//         finally
-//        {
-//            try {
-//                agentSocket.close();
-//            } catch (IOException e) {
-//                System.err.println("Błąd socketa");
-//            }
-//        }
-    }
-        public static void openApiGateway(PrintWriter pw,Socket socket) throws IOException {
-
-
-
+         finally
+        {
+            try {
+                agentSocket.close();
+            } catch (IOException e) {
+                System.err.println("Błąd socketa");
+            }
         }
+    }
 
 
         }
