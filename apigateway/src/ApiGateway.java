@@ -7,10 +7,17 @@ import java.util.Scanner;
 
 public class ApiGateway {
 
+  public static ArrayList<String> LoginServicesPorts = new ArrayList<>();
+
+  public static int LoginServicesPortsIteration = 0;
 
 
     public static void main(String[] args) {
-        System.out.println("APIGATEWAY");
+
+        System.out.println("ApiGateway");
+        LoginServicesPorts.add("9002");
+        LoginServicesPorts.add("9012");
+
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));
@@ -54,8 +61,8 @@ public class ApiGateway {
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             String request = input.readLine();
-            String[] requestParts = request.split(";", 2);
-            String requestType = requestParts[0];
+            String[] requestParts = request.split(" " );
+            String requestType = requestParts[1];
 
             String targetServicePort;
             String targetServiceIP;
@@ -72,7 +79,11 @@ public class ApiGateway {
                     targetServicePort = properties.getProperty("login.service.port");
                     targetServiceIP = properties.getProperty("login.service.ip");
 
-
+                    targetServicePort = LoginServicesPorts.get(LoginServicesPortsIteration);
+                    LoginServicesPortsIteration++;
+                    if(LoginServicesPortsIteration> LoginServicesPorts.size()){
+                        LoginServicesPortsIteration = 0;
+                    }
                 }
                 case "post", "czytaj-posts" -> {
                     targetServicePort = properties.getProperty("post.service.port");
@@ -94,7 +105,7 @@ public class ApiGateway {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
                      PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                      BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
-                    String[] parts = request.split(";");
+                    String[] parts = request.split(" ");
                     String destinationFileName = parts[parts.length - 2];
                     String encodedFile = parts[parts.length - 1];
 

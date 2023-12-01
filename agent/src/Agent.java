@@ -84,6 +84,16 @@ public class Agent {
             waitForUserInput();
         }
         waitForUserInput();
+
+//        Connection to Maganger
+//        Get request from Manager
+//        Open specific service by response from Manager data
+//        Return to maganger status of processes
+
+
+
+
+
     }
     private static void waitForUserInput() {
         System.out.println("Press Enter to exit...");
