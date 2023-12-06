@@ -93,7 +93,7 @@ public class Manager {
                 new Thread(new AgentThread(clientSocket)).start();
 
                 try {
-                if(Agent0.isConnected() && !isApiGatwayRequestSended){
+                if(!isApiGatwayRequestSended){
                     System.out.println("Agent0 Im trying to send request to open apiGateway:");
                                       PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
                                       output2.println("type:execution_request;" +

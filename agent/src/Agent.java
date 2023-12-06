@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 public class Agent {
     public static void main(String[] args) throws InterruptedException, IOException {
+        System.out.println("[AGENT PROCESS]");
 
         String agentPort = args[0];
         String agentIP = args[1];
@@ -37,6 +38,54 @@ public class Agent {
                     "service_repository: none"
             );
             System.out.println("Initiation request has been sended to Manager");
+
+
+
+// NEW THREAD
+            Runnable myThread = () ->
+            {
+            //                    REQUEST SEGMENT
+                while (true) {
+                String request = null;
+                try {
+                    request = input.readLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("[REQUEST]" + request);
+                try {
+                    String[] ManagerData = request.split(";");
+                    String[] requestType = ManagerData[0].split(":");
+                    if (requestType[1].equals("execution_request")) {
+                        System.out.println("[REQUEST]" + "execution request has been detected");
+                        String servicePath = System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
+                        try {
+                            ProcessBuilder ApiGateway = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort);
+                            Process API = ApiGateway.start();
+                        } catch (Exception e) {
+                            System.out.println("[APIGATEWAY] Processbuilder failed");
+                        }
+
+                    }
+                } finally {
+
+                }
+            }
+            }
+                ;
+                // Instantiating Thread class by passing Runnable
+                // reference to Thread constructor
+                Thread run = new Thread(myThread);
+
+                // Starting the thread
+                run.start();
+
+
+
+
+
+
+
 //    ---------------------------------------------Register to Manager END--------------------------------------------------
 //            "type:execution_request;" +
 //                    "message_id:0;" +
@@ -48,33 +97,13 @@ public class Agent {
 
             try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(agentPort))) {
                 while (true) {
-//                    REQUEST SEGMENT
-                    String request = input.readLine();
-                    System.out.println("[REQUEST]" + request);
-                    try {
-                        String[] ManagerData = request.split(";");
-                        String[] requestType = ManagerData[0].split(":");
-                        if(requestType[1].equals("execution_request")){
-                            System.out.println("[REQUEST]" + "execution request has been detected");
-                            String servicePath =  System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
-                            try {
-                                ProcessBuilder ApiGateway = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  servicePath, agentIP, agentPort);
-                                Process API = ApiGateway.start();
-                            }catch (Exception e){
-                                System.out.println("[APIGATEWAY] Processbuilder failed");
-                            }
-
-                        }
-                        System.out.println("test");
 //                    CONNECTION SEGMENT
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
                     new Thread(new MicroserviceThread(clientSocket)).start();
-                    }catch (Exception e){
-                        System.out.println("[ERROR] Cannot parse request");
                     }
 
-                }
+
             } catch (IOException e) {
                 System.err.println("500;Login Service ERROR. " + e.getMessage());
                 waitForUserInput();
