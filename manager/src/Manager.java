@@ -42,7 +42,7 @@ public class Manager {
 
 
 
-    public static ArrayList<Integer> test = new ArrayList<>();
+
     public static Socket Agent0;
     public static Socket Agent1;
     public static Socket Agent2;
@@ -54,10 +54,11 @@ public class Manager {
 //            "socket_configuration: none\n" +
 //            "plug_configuration: none\n";
     public static void main(String[] args) throws InterruptedException, IOException {
+        System.out.println("[MANAGER]");
         String ManagerPort = "9100";
         String ManagerIP = "localhost";
         String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
-        Boolean isApiGatwayRequestSended = false;
+
 
 
 //          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
@@ -71,7 +72,7 @@ public class Manager {
             Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
             Process ProcPostsAgent = pbPostsAgent.start();
             if(!ProcAPIGatewayAgent.isAlive() || !ProcLoginRegisterAgent.isAlive() || !ProcPostsAgent.isAlive()){
-            Thread.sleep(200); // Agents need have time to open process
+//            Thread.sleep(200); // Agents need have time to open process
                 System.out.println();
                 System.out.println("isAlive APIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
                 System.out.println("isAlive LoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
@@ -86,35 +87,65 @@ public class Manager {
             e.printStackTrace();
             waitForUserInput();
         }
-        try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(ManagerPort))) {
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Agent connected \n");
-                new Thread(new AgentThread(clientSocket)).start();
 
-                try {
-                if(!isApiGatwayRequestSended){
-                    System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                                      PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-                                      output2.println("type:execution_request;" +
-                                             "message_id:0;" +
-                                             "agent_network_address:none;" +
-                                             "service_name:ApiGateway.jar;" +
-                                             "service_instance_id:1;" +
-                                             "socket_configuration:none;" +
-                                             "plug_configuration:none");
-                    output2.flush();
-                    isApiGatwayRequestSended = true;
+
+
+
+
+
+
+
+        Runnable myThread2 = () ->
+        {
+            System.out.println("SERVER THREAD STARTED");
+            try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(ManagerPort))) {
+                while (true) {
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("Agent connected \n");
+                    new Thread(new AgentThread(clientSocket)).start();
                 }
-                }catch(Exception e){
 
-                    }
-
+            } catch (IOException e) {
+                System.err.println("500;Login Service ERROR. " + e.getMessage());
+                waitForUserInput();
             }
-        } catch (IOException e) {
-            System.err.println("500;Login Service ERROR. " + e.getMessage());
+        };
+
+        // Instantiating Thread class by passing Runnable
+        // reference to Thread constructor
+        Thread run = new Thread(myThread2);
+
+        // Starting the thread
+        run.start();
+
+        System.out.println("REQUEST SENDER THREAD STARTED");
+        Thread.sleep(1000);
+
+        Boolean isApiGatwayRequestSended = false;
+        try {
+            if(!isApiGatwayRequestSended){
+                System.out.println("Agent0 Im trying to send request to open apiGateway:");
+                PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
+                output2.println("type:execution_request;" +
+                        "message_id:0;" +
+                        "agent_network_address:none;" +
+                        "service_name:ApiGateway.jar;" +
+                        "service_instance_id:1;" +
+                        "socket_configuration:none;" +
+                        "plug_configuration:none");
+                isApiGatwayRequestSended = true;
+                output2.flush();
+            }
+        }catch(Exception e){
+
             waitForUserInput();
         }
+
+
+
+
+//            Thread.sleep(1000);
+
     }
     private static void waitForUserInput() {
         System.out.println("Press Enter to exit...");
@@ -163,6 +194,19 @@ public class Manager {
                                       Agent2 = this.agentSocket;
                                   }
 
+                              }
+                              if(requestType[1].equals("microserviceadress_request")){
+                                  System.out.println("microserviceadress_request detected ");
+                                  try {
+//                                          System.out.println("Agent0 Im trying to send request to open apiGateway:");
+                                          PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
+                                          output2.println("Type:microserviceadress_request;Message_id:9013");
+                                          output2.flush();
+
+                                  }catch(Exception e){
+
+
+                                  }
                               }
 
                           }

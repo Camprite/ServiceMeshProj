@@ -28,7 +28,7 @@ public class ApiGateway {
         try (Socket socket = new Socket("localhost", 9010);
         PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            outputAgent.write("Message from api ");
+            outputAgent.write("Message from api;:");
             outputAgent.flush();
             System.out.println("połączono");
             socket.close();
