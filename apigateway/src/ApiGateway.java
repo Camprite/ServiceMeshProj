@@ -70,7 +70,7 @@ public class ApiGateway {
             String targetServiceIP;
 
 
-            String  requestToAgent = "Type:microserviceadress_request;" +
+            String  requestToAgent = "type:microserviceadress_request;" +
             "Message_id:" + requestType;
             System.out.println("[Request For Microservice Adress]: " + requestToAgent);
 
@@ -80,6 +80,29 @@ public class ApiGateway {
                 outputAgent.println(requestToAgent);
                 System.out.println("[WYSLANO REQUEST DO AGENTA]");
                 outputAgent.flush();
+                String outputFromAgent = null;
+                while (true){
+                    if(inputAgent.readLine()!=null)
+                    {
+                      outputFromAgent  = inputAgent.readLine();
+                        break;
+                    }
+
+                }
+                try (Socket MicroserviceSocket = new Socket("localhost", Integer.parseInt(outputFromAgent));
+                     PrintWriter outputMicroservice = new PrintWriter(MicroserviceSocket.getOutputStream(), true);
+                     BufferedReader inputMicroservice = new BufferedReader(new InputStreamReader(MicroserviceSocket.getInputStream()))) {
+                    outputMicroservice.println(request);
+                    String responseMicroservice = null;
+
+                    while (responseMicroservice == null){
+                        responseMicroservice = inputMicroservice.readLine();
+                    }
+                    output.println(responseMicroservice);
+
+                }
+
+
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();

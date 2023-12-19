@@ -58,6 +58,7 @@ public class Manager {
         String ManagerIP = "localhost";
         String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
         Boolean isApiGatwayRequestSended = false;
+        Boolean isLoginServiceRequestSended = false;
 
 
 //          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
@@ -105,7 +106,20 @@ public class Manager {
                                              "plug_configuration:none");
                     output2.flush();
                     isApiGatwayRequestSended = true;
+                }   if(!isLoginServiceRequestSended){
+                    System.out.println("Agent1 Im trying to send request to open apiGateway:");
+                                      PrintWriter output2 = new PrintWriter(Agent1.getOutputStream(), true);
+                                      output2.println("type:execution_request;" +
+                                             "message_id:0;" +
+                                             "agent_network_address:none;" +
+                                             "service_name:login.jar;" +
+                                             "service_instance_id:1;" +
+                                             "socket_configuration:9009;" +
+                                             "plug_configuration:none");
+                    output2.flush();
+                        isLoginServiceRequestSended = true;
                 }
+
                 }catch(Exception e){
 
                     }
@@ -163,6 +177,13 @@ public class Manager {
                                       Agent2 = this.agentSocket;
                                   }
 
+                              }
+                              if(requestType[1].equals("microservice_port")){
+                                    ProcessBuilder loginMicroservice = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar");
+                                    Process ProcPostsAgent = loginMicroservice.start();
+                                  output.println("type:port_response;" +
+                                          "message_id:9999;"
+                                  );
                               }
 
                           }

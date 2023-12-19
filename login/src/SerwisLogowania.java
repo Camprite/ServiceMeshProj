@@ -17,6 +17,7 @@ public class SerwisLogowania {
         String ip = args[1];
         System.out.println("PORT: " + port);
         System.out.println("IP: " + ip);
+        System.out.println("Logowanie on port: " + args[2]);
 
 
         Properties properties = new Properties();
@@ -28,9 +29,9 @@ public class SerwisLogowania {
         }
 
 //        int loginPort = Integer.parseInt(properties.getProperty("login.service.port")); CHANGED
-        int loginPort = Integer.parseInt(port);
+        int loginPort = Integer.parseInt(args[2]);
 
-        try (ServerSocket serverSocket = new ServerSocket(loginPort)) {
+        try (ServerSocket serverSocket = new ServerSocket(9999)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("NEW CLIENT");

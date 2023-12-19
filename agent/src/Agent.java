@@ -5,9 +5,13 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Agent {
+    private static final AtomicBoolean isOn = new AtomicBoolean(false);
     public static void main(String[] args) throws InterruptedException, IOException {
+        SharedResource sharedResource = new SharedResource();
+
         System.out.println("[AGENT PROCESS]");
 
         String agentPort = args[0];
@@ -48,6 +52,17 @@ public class Agent {
                 while (true) {
                 String request = null;
                 try {
+                    System.out.println(sharedResource.isLoginPortNeed());
+                    if(sharedResource.isLoginPortNeed()){
+                        System.out.println("LoginPortNeed");
+                        output.println("type:microservice_port;" +
+                                "message_id:login;"
+                        );
+                        sharedResource.requestALoginPortSended();
+                    }
+
+
+
                     request = input.readLine();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -60,15 +75,19 @@ public class Agent {
                         System.out.println("[REQUEST]" + "execution request has been detected");
                         String servicePath = System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
                         try {
-                            ProcessBuilder ApiGateway = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort);
+                            ProcessBuilder ApiGateway = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort, ManagerData[5].split(":")[1]);
                             Process API = ApiGateway.start();
                         } catch (Exception e) {
                             System.out.println("[APIGATEWAY] Processbuilder failed");
                         }
 
                     }
-                } finally {
-
+                    if(requestType[1].equals("port_response")){
+                        sharedResource.setLoginPort(Integer.parseInt(ManagerData[2].split(":")[1]));
+                        System.out.println("port response");
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
             }
             }
@@ -100,7 +119,7 @@ public class Agent {
 //                    CONNECTION SEGMENT
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
-                    new Thread(new MicroserviceThread(clientSocket)).start();
+                    new Thread(new MicroserviceThread(clientSocket,sharedResource)).start();
                     }
 
 
@@ -133,8 +152,10 @@ public class Agent {
     }
     static class MicroserviceThread  implements Runnable {
         private final Socket microserviceSocket;
-        public MicroserviceThread(Socket clientSocket) {
+        private SharedResource sharedResource;
+        public MicroserviceThread(Socket clientSocket,SharedResource sharedResource) {
             this.microserviceSocket = clientSocket;
+            this.sharedResource = sharedResource;
         }
 
         @Override
@@ -147,17 +168,23 @@ public class Agent {
                         String request = input.readLine();
                     if(request != null){
                         System.out.println("[REQUEST]: " + request);
-                        try {
-                        String[] ManagerData = request.split(";");
-                        String[] RequestType = ManagerData[0].split(":");
+                            try {
+                            String[] ManagerData = request.split(";");
+                            String[] RequestType = ManagerData[0].split(":");
                         if (RequestType[1].equals("execution_request")) {
                             System.out.println("execution request has been detected");
                         }
-
-
+                        if(RequestType[1].equals("microserviceadress_request")){
+                            sharedResource.requestALoginPort();
+                            System.out.println("RequestOfPortHasBeenMarked");
+                            while (!sharedResource.isLoginPortAvailable()){
+                                Thread.sleep(5);
+                            }
+                            output.println(sharedResource.getLoginPort());
+                        }
                     } catch (Exception e) {
-                        System.out.println("Błędny typ requesta");
-                        e.printStackTrace();
+                        System.out.println("Nierozpoznany typ requesta");
+//                        e.printStackTrace();
                     }}
 
                 }
@@ -173,6 +200,6 @@ public class Agent {
             }
 
         }
-    }
 
+}
 }
