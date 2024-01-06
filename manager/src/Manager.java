@@ -4,7 +4,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import java.util.HashMap;
+import java.util.Map;
 //  PRZYDATNE :)
 //  netstat -ano | find "9000"
 //  taskkill /F /PID your_PID
@@ -42,7 +43,9 @@ public class Manager {
 
 
 
-
+    private static final int INITIAL_PORT = 9101; // Starting port number for microservices
+    private static int currentPort = INITIAL_PORT;
+    private static final Map<String, Integer> microservicePorts = new HashMap<>();
     public static Socket Agent0;
     public static Socket Agent1;
     public static Socket Agent2;
@@ -164,74 +167,50 @@ public class Manager {
 
         @Override
         public void run() {
-
             try (BufferedReader input = new BufferedReader(new InputStreamReader(agentSocket.getInputStream()));
-                 PrintWriter output = new PrintWriter(agentSocket.getOutputStream(), true)
-                 ) {
-                try {
+                 PrintWriter output = new PrintWriter(agentSocket.getOutputStream(), true)) {
 
+                while (true) {
+                    String request = input.readLine();
+                    if (request != null) {
+                        System.out.println("Request: " + request);
 
-                      while(true) {
-                          String request = input.readLine();
-                          if (request != null) {
-                              System.out.println("Request: "+ request);
-                              String[] userData = request.split(";");
-                              String[] requestType = userData[0].split(":");
-                              System.out.println("requestType: "+ requestType[1]);
-                              if(requestType[1].equals("initiation_request")){
-                                  System.out.println("initiation_request has beed detected");
-                                  String[] message_id = userData[1].split(":");
-                                  if(message_id[1].equals("0")){
-                                  System.out.println("AGENT 0 HAS BEEN CONECTED TO MANAGER");
-                                      Agent0 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("1")){
-                                  System.out.println("AGENT 1 HAS BEEN CONECTED TO MANAGER");
-                                      Agent1 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("2")){
-                                  System.out.println("AGENT 2 HAS BEEN CONECTED TO MANAGER");
-                                      Agent2 = this.agentSocket;
-                                  }
+                        String[] userData = request.split(";");
+                        String[] requestType = userData[0].split(":");
+                        System.out.println("Request Type: " + requestType[1]);
 
-                              }
-                              if(requestType[1].equals("microserviceadress_request")){
-                                  System.out.println("microserviceadress_request detected ");
-                                  try {
-//                                          System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                                          PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-                                          output2.println("Type:microserviceadress_request;Message_id:9013");
-                                          output2.flush();
-
-                                  }catch(Exception e){
-
-
-                                  }
-                              }
-
-                          }
-                      }
-                }catch (SocketException s){
-                    s.printStackTrace();
+                        if (requestType[1].equals("microserviceadress_request")) {
+                            // Assign a new port to the microservice
+                            int assignedPort = assignPort(requestType[1]);
+                            System.out.println("Assigned Port: " + assignedPort);
+                            //To do createProccess with assigned port from Dawid branch
+                            // Send the assigned port back to the Agent
+                            output.println("Type:microserviceadress_request;AssignedPort:" + assignedPort);
+                            output.flush();
+                        }
+                    }
                 }
-
-            }catch(IOException e){
-            e.printStackTrace();
-            }
-         finally
-        {
-            try {
-                agentSocket.close();
             } catch (IOException e) {
-                System.err.println("Błąd socketa");
+                System.err.println("Error in AgentThread: " + e.getMessage());
+            } finally {
+                try {
+                    agentSocket.close();
+                } catch (IOException e) {
+                    System.err.println("Error closing agent socket");
+                }
             }
         }
+
+        private int assignPort(String microserviceType) {
+            int assignedPort = currentPort;
+            currentPort++;
+            microservicePorts.put(microserviceType, assignedPort);
+            return assignedPort;
+        }
     }
-
-
         }
 
-    }
+
 
 
 

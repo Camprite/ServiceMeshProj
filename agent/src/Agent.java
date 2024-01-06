@@ -146,30 +146,43 @@ public class Agent {
                  PrintWriter outputFromMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true)) {
                 while (true) {
                         String request = inputFromMicroservice.readLine();
-                    if(request != null){
+                        System.out.println(request);
+                    if(request != null)
                         System.out.println("[REQUEST]: " + request);
-                        try {
-                        String[] ManagerData = request.split(";");
-                        String[] RequestType = ManagerData[0].split(":");
-                        if (RequestType[1].equals("execution_request")) {
-                            System.out.println("execution request has been detected");
+                    String[] requestParts = request.split(";");
+                    String requestType = requestParts[0].split(":")[1];
+
+                    if (requestType.equals("microserviceadress_request")) {
+
+                        try (Socket managerSocket = new Socket("localhost", 9100);
+                             PrintWriter outputToManager = new PrintWriter(managerSocket.getOutputStream(), true);
+                             BufferedReader inputFromManager = new BufferedReader(new InputStreamReader(managerSocket.getInputStream()))) {
+
+                            outputToManager.println(request);
+                            System.out.println("[FORWARDED REQUEST TO MANAGER]");
+
+
+                            String managerResponse = inputFromManager.readLine();
+                            int assignedPort = Integer.parseInt(managerResponse.split(":")[1]);
+                            System.out.println("[Received Assigned Port from Manager]: " + assignedPort);
+
+
+                            try (Socket apiSocket = new Socket("localhost", 9000);
+                                 PrintWriter outputToApiGateway = new PrintWriter(apiSocket.getOutputStream(), true)) {
+
+                                outputToApiGateway.println("Type:microserviceadress_request;AssignedPort:" + assignedPort);
+                                outputToApiGateway.flush();
+
+                            } catch (IOException e) {
+                                System.err.println("Error communicating with API Gateway: " + e.getMessage());
+                                waitForUserInput();
+                            }
+                        } catch (IOException e) {
+                            System.err.println("Error connecting to Manager: " + e.getMessage());
+                            waitForUserInput();
                         }
-                        if (RequestType[1].equals("microserviceadress_request")) {
-                            try (Socket socket = new Socket("localhost", 9100);
-                                 PrintWriter output = new PrintWriter(socket.getOutputStream(), true)){
-                                    output.println(request);
-                                    output.flush();
-                            }
-                            catch (Exception e){
-                                System.out.println("connectToManagerProblem");
-                            }
-                      }
+                    }
 
-
-                    } catch (Exception e) {
-                        System.out.println("Nie mogę podzielić requesta");
-//                        e.printStackTrace();
-                    }}
 
                 }
 

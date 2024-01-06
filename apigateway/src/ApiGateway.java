@@ -61,8 +61,9 @@ public class ApiGateway {
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             String request = input.readLine();
-            System.out.println("[REQUEST FROM CLI]: " + request); //[REQUEST FROM CLI]: Type:logowanie;Message_id:1444838425;Line:daw;daw
-            String[] requestParts = request.split(";" );
+            System.out.println("[REQUEST FROM CLI]: " + request);
+
+            String[] requestParts = request.split(";");
             String requestType = requestParts[0].split(":")[1];
             System.out.println(requestType);
 
@@ -78,8 +79,15 @@ public class ApiGateway {
                  PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader inputAgent = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 outputAgent.println(requestToAgent);
-                System.out.println("[WYSLANO REQUEST DO AGENTA]");
+                System.out.println("[WYSLANO REQUEST DO AGENTA]" );
                 outputAgent.flush();
+
+
+                String agentResponse = inputAgent.readLine();
+                int microservicePort = Integer.parseInt(agentResponse.split(":")[1]);
+                System.out.println("[Received Microservice Port]: " + microservicePort);
+                //To do: send request to microservice
+
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();
