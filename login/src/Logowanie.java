@@ -22,13 +22,13 @@ public class Logowanie implements Runnable {
 
             String request = input.readLine();
             String[] userData = request.split(";");
-            if (userData.length != 3) {
+            if (userData.length != 4) {
                 output.println("Nieprawidłowe dane uwierzytelniające.");
                 return;
             }
 
-            String username = userData[1];
-            String password = userData[2];
+            String username = userData[2].split(":")[1];
+            String password = userData[3];
             try (Connection connection = PolaczenieBaza.getConnection()) {
                 PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
                 checkUserStatement.setString(1, username);

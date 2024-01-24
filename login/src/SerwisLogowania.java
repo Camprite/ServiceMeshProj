@@ -13,8 +13,10 @@ public class SerwisLogowania {
             throw new Exception("Brak zdefioniowanych portów");
         }
         System.out.println("SerwisLogowania");
-        String port = args[0];
-        String ip = args[1];
+        String portAgent = args[0];
+        String ipAgent = args[1];
+        String port = args[2];
+        String ip = args[3];
         System.out.println("PORT: " + port);
         System.out.println("IP: " + ip);
 

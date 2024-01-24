@@ -7,6 +7,12 @@ import java.util.Properties;
 public class SerwisPlikow {
     public static void main(String[] args) {
         System.out.println("SerwisPlikow");
+        String portAgent = args[0];
+        String ipAgent = args[1];
+        String port = args[2];
+        String ip = args[3];
+        System.out.println("PORT: " + port);
+        System.out.println("IP: " + ip);
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));
@@ -15,7 +21,7 @@ public class SerwisPlikow {
             return;
         }
 
-        int loginPort = Integer.parseInt(properties.getProperty("file.service.port"));
+        int loginPort = Integer.parseInt(port);
 
         try (ServerSocket serverSocket = new ServerSocket(loginPort)) {
             while (true) {

@@ -22,13 +22,13 @@ public class Posty implements Runnable {
 
             String request = input.readLine();
             String[] requestData = request.split(";");
-            String requestType = requestData[0];
+            String requestType = requestData[0].split(":")[1];
 
             if (requestType.equals("post")) {
 
                 try (Connection connection = PolaczenieBaza.getConnection()) {
-                    String username = requestData[1];
-                    String postData = requestData[2];
+                    String username = requestData[2].split(":")[1];
+                    String postData = requestData[3];
                     PreparedStatement getUserIdStatement = connection.prepareStatement("SELECT id FROM users WHERE username = ?");
                     getUserIdStatement.setString(1, username);
                     ResultSet resultSet = getUserIdStatement.executeQuery();
