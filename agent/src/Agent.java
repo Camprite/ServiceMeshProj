@@ -46,12 +46,14 @@ public class Agent {
                 //                    REQUEST SEGMENT
                 while (true) {
                 String request = input.readLine();
-
+                    System.out.println("TEST" + request);
                 try {
                         if(request != null) {
                         System.out.println("[REQUEST FROM MANAGER]" + request);
+
                         String[] ManagerData = request.split(";");
                         String[] requestType = ManagerData[0].split(":");
+                        System.out.println("TEST" + request);
                         if (requestType[1].equals("execution_request")) {
                             System.out.println("[REQUEST]" + "execution request has been detected");
                             String servicePath = System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
@@ -146,7 +148,7 @@ public class Agent {
                  PrintWriter outputFromMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true)) {
                 while (true) {
                         String request = inputFromMicroservice.readLine();
-                        System.out.println(request);
+                        System.out.println("WAZNE" +request);
                     if(request != null)
                         System.out.println("[REQUEST]: " + request);
                     String[] requestParts = request.split(";");
@@ -157,8 +159,9 @@ public class Agent {
                         try (Socket managerSocket = new Socket("localhost", 9100);
                              PrintWriter outputToManager = new PrintWriter(managerSocket.getOutputStream(), true);
                              BufferedReader inputFromManager = new BufferedReader(new InputStreamReader(managerSocket.getInputStream()))) {
-
+                            System.out.println("WAZNE " + request);
                             outputToManager.println(request);
+
                             System.out.println("[FORWARDED REQUEST TO MANAGER]");
 
 

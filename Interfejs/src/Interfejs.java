@@ -136,7 +136,6 @@ public class Interfejs {
             System.out.println(request);
 
             String response = sendRequestToApiGateway(request);
-
             String[] responseParts = response.split(";", 2);
             String responseType = responseParts[0];
             String responseData = responseParts.length > 1 ? responseParts[1] : "";
