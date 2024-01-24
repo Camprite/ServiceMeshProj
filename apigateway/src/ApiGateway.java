@@ -82,7 +82,9 @@ public class ApiGateway {
                 String response=inputAgent.readLine();
                 String[] responseData=response.split(";");
                 targetServiceIP=responseData[3].split(":")[1];
+                System.out.println(targetServiceIP);
                 targetServicePort=responseData[4].split(":")[1];
+                System.out.println(targetServicePort);
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();
@@ -146,7 +148,9 @@ public class ApiGateway {
                 }
             } else {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
+                    System.out.println("here");
                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
+                    System.out.println("here");
                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
 
                     targetOutput.println(request);
@@ -157,6 +161,7 @@ public class ApiGateway {
                 } catch (IOException e) {
                     System.err.println("Błędne żądanie przekierowania.");
                     e.printStackTrace();
+                    System.out.println(e.getMessage());
                     waitForUserInput();
                 }
             }

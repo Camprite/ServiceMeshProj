@@ -33,7 +33,10 @@ public class SerwisLogowania {
         int loginPort = Integer.parseInt(port);
 
         try (ServerSocket serverSocket = new ServerSocket(loginPort)) {
+            System.out.println(loginPort);
+            System.out.println(serverSocket.getLocalPort());
             while (true) {
+                System.out.println("new request");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("NEW CLIENT");
                 new Thread(new Logowanie(clientSocket)).start();

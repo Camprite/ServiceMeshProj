@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Interfejs {
@@ -53,7 +54,8 @@ public class Interfejs {
             String dane;
             String login = "";
             String haslo;
-            String message_id="";
+            Random rand=new Random();
+            String message_id=String.valueOf(rand.nextInt(1000,10000));
             switch (wybor) {
                 case "REJESTRACJA" -> {
                     if (obecnyUser.equals("")) {

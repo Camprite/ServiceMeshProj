@@ -72,6 +72,7 @@ public class Agent {
                             }
                             outputFromMicroservice.println(sb.toString());
                             outputFromMicroservice.flush();
+                            continue;
                         }
                         if (requestType.equals("execution_request")) {
                             String serviceName = ManagerData[3].split(":")[1];
