@@ -115,6 +115,11 @@ public class ApiGateway {
 //            }
 //
             int targetPort = Integer.parseInt(targetServicePort);
+            try {
+                Thread.sleep(2000);
+            } catch (Exception ignore){
+
+            }
 
             if (requestType.equals("wgraj_plik")) {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
@@ -148,9 +153,7 @@ public class ApiGateway {
                 }
             } else {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
-                    System.out.println("here");
                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
-                    System.out.println("here");
                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
 
                     targetOutput.println(request);

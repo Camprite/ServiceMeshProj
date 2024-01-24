@@ -19,7 +19,6 @@ public class Pliki implements Runnable {
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
             String request = input.readLine();
             String[] requestFile = request.split(";");
-
             if (requestFile[0].equals("wgraj_plik")) {
                 String destinationnazwaPliku = requestFile[1];
                 String encodedFile = requestFile[2];

@@ -91,7 +91,7 @@ public class Interfejs {
                     }
                     typ = "post";
                     System.out.print("Treść posta: ");
-                    dane = obecnyUser + " " + scanner.nextLine();
+                    dane = obecnyUser + ";" + scanner.nextLine();
                 }
                 case "CZYTAJ-POSTS" -> {
                     if (obecnyUser.equals("")) {
@@ -116,7 +116,7 @@ public class Interfejs {
                     }
                     System.out.print("Nazwa pliku: ");
                     celnazwaPliku = scanner.nextLine();
-                    dane = obecnyUser + " " + sciezkaPliku;
+                    dane = obecnyUser + ";" + sciezkaPliku;
                 }
                 case "POBIERZ" -> {
                     if (obecnyUser.equals("")) {
@@ -126,7 +126,7 @@ public class Interfejs {
                     typ = "pobierz_plik";
                     System.out.print("Nazwa pliku który chcesz pobrać: ");
                     String nazwaPliku = scanner.nextLine();
-                    dane = obecnyUser + " " + nazwaPliku;
+                    dane = obecnyUser + ";" + nazwaPliku;
                 }
                 default -> {
                     System.out.println("Proszę, wybierz poprawną opcję");
@@ -135,7 +135,6 @@ public class Interfejs {
             }
 
             String request = "Type:"+ typ + ";" +"Message_id:"+message_id+ ";" +"Line:" + dane;
-            System.out.println(request);
 
             String response = sendRequestToApiGateway(request);
 

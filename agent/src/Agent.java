@@ -78,6 +78,10 @@ public class Agent {
                             String serviceName = ManagerData[3].split(":")[1];
                             if(serviceName.compareTo("logowanie")==0){
                                 serviceName="login";
+                            } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
+                                serviceName="posty";
+                            } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
+                                serviceName="pliki";
                             }
                             System.out.println("[REQUEST]" + "execution request has been detected");
                             String portNumber = ManagerData[5].split(":")[1];
@@ -107,6 +111,10 @@ public class Agent {
                             String serviceName = ManagerData[3].split(":")[1];
                             if(serviceName.compareTo("logowanie")==0){
                                 serviceName="login";
+                            } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
+                                serviceName="posty";
+                            } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
+                                serviceName="pliki";
                             }
                             boolean found=false;
                             for(MicroServiceData msd:RunningServices){

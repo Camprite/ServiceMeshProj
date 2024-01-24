@@ -191,7 +191,6 @@ public class Manager {
                               System.out.println("Request: "+ request);
                               String[] userData = request.split(";");
                               String requestType = userData[0].split(":")[1];
-                              System.out.println("requestType: "+ requestType);
                               boolean enter=true;
                               if(userData[userData.length-1].split(":")[0].compareTo("Status")==0){
                                   if(userData[userData.length-1].split(":")[1].compareTo("200")==0){
@@ -204,6 +203,10 @@ public class Manager {
                                       String serviceName = userData[3].split(":")[1];
                                       if(serviceName.compareTo("logowanie")==0){
                                           serviceName="login";
+                                      } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
+                                          serviceName="posty";
+                                      } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
+                                          serviceName="pliki";
                                       }
                                       Socket currentSocket=null;
                                       for (int i=0;i<3;i++){
@@ -244,7 +247,6 @@ public class Manager {
                                   }
                               }
                               if(requestType.equals("initiation_request")){
-                                  System.out.println("initiation_request has beed detected");
                                   int index=Integer.parseInt(userData[2].split(":")[1]);
                                   if(index>=0 && index<=2){
                                       System.out.println("AGENT "+index+" HAS BEEN CONECTED TO MANAGER");
@@ -255,10 +257,13 @@ public class Manager {
                                 output.flush();
                               }
                               else if(requestType.equals("microserviceadress_request") && enter){
-                                  System.out.println("microserviceadress_request detected ");
                                   String serviceName = userData[3].split(":")[1];
                                   if(serviceName.compareTo("logowanie")==0){
                                       serviceName="login";
+                                  } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
+                                      serviceName="posty";
+                                  } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
+                                      serviceName="pliki";
                                   }
                                   Socket currentSocket=null;
                                   for (int i=0;i<3;i++){
