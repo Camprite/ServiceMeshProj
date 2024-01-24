@@ -47,6 +47,8 @@ public class Manager {
     public static Socket[] Agents={null,null,null};
     public static String[][] AgentsServices={null,null,null};
 
+    public static int maxCreate=0;
+
 //    static String RequestToCreateApiGatewayMicroservice =
 //            "type:execution_request \n" +
 //            "message_id: Start Api Gateway Microservice \n" +
@@ -190,8 +192,56 @@ public class Manager {
                               String[] userData = request.split(";");
                               String requestType = userData[0].split(":")[1];
                               System.out.println("requestType: "+ requestType);
+                              boolean enter=true;
                               if(userData[userData.length-1].split(":")[0].compareTo("Status")==0){
-                                  continue;
+                                  if(userData[userData.length-1].split(":")[1].compareTo("200")==0){
+                                      Socket currentSocket=Agents[Integer.parseInt(userData[2].split(":")[1])];
+                                      PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                      currentOutput.println(request);
+                                      currentOutput.flush();
+                                      enter=false;
+                                  } else {
+                                      String serviceName = userData[3].split(":")[1];
+                                      if(serviceName.compareTo("logowanie")==0){
+                                          serviceName="login";
+                                      }
+                                      Socket currentSocket=null;
+                                      for (int i=0;i<3;i++){
+                                          for (String service:AgentsServices[i]){
+                                              if(service.compareTo(serviceName)==0){
+                                                  currentSocket=Agents[i];
+                                                  break;
+                                              }
+                                          }
+                                      }
+                                      try{
+                                      if(currentSocket==null){
+                                          throw new Exception("Wrong service name!!!");
+                                      }}
+                                      catch (Exception ignore){
+
+                                      }
+                                      PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                      maxCreate++;
+                                      if(maxCreate>=5){
+                                          continue;
+                                      }
+                                      int newPort=newPort();
+                                      currentOutput.println("type:execution_request;" +
+                                              "message_id:0;" +
+                                              "agent_network_address:none;" +
+                                              "service_name:"+serviceName+";" +
+                                              "service_instance_id:1;" +
+                                              "socket_configuration:"+newPort+";" +
+                                              "plug_configuration:none");
+                                      currentOutput.flush();
+                                      StringBuilder sb=new StringBuilder(userData[0]);
+                                      for (int i=1;i<4;i++){
+                                          sb.append(";"+userData[i]);
+                                      }
+                                      request=sb.toString();
+                                      userData = request.split(";");
+                                  }
                               }
                               if(requestType.equals("initiation_request")){
                                   System.out.println("initiation_request has beed detected");
@@ -204,9 +254,9 @@ public class Manager {
                                 output.println(request+";Status:200");
                                 output.flush();
                               }
-                              else if(requestType.equals("microserviceadress_request")){
+                              else if(requestType.equals("microserviceadress_request") && enter){
                                   System.out.println("microserviceadress_request detected ");
-                                  String serviceName = userData[2].split(":")[1];
+                                  String serviceName = userData[3].split(":")[1];
                                   if(serviceName.compareTo("logowanie")==0){
                                       serviceName="login";
                                   }
@@ -226,30 +276,6 @@ public class Manager {
                                         PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
                                         currentOutput.println(request);
                                         currentOutput.flush();
-                                        BufferedReader currentInput = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-
-                                        String response=currentInput.readLine();
-                                      System.out.println(response);
-                                        String[] responseData=response.split(";");
-                                      System.out.println(responseData[4].split(":")[1]);
-                                        while(responseData[4].split(":")[1].compareTo("0")==0){
-                                            int newPort=newPort();
-                                            currentOutput.println("type:execution_request;" +
-                                                    "message_id:0;" +
-                                                    "agent_network_address:none;" +
-                                                    "service_name:"+serviceName+";" +
-                                                    "service_instance_id:1;" +
-                                                    "socket_configuration:"+newPort+";" +
-                                                    "plug_configuration:none");
-                                            currentOutput.flush();
-                                            currentOutput.println(request);
-                                            currentOutput.flush();
-                                            response=currentInput.readLine();
-                                            System.out.println(response);
-                                            responseData=response.split(";");
-                                            System.out.println(responseData[4].split(":")[1]);
-                                        }
-                                        output.println(request+";ServiceIP:"+responseData[3].split(":")[1]+";Port:"+responseData[4].split(":")[1]+";Status:200");
                                   }catch(Exception e){
                                       System.out.println(e.getMessage());
                                   }

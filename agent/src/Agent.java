@@ -11,6 +11,9 @@ import java.util.Scanner;
 public class Agent {
     private static final String[][] ServiceRepository={{"apigateway"},{"login","rejestracja"},{"pliki","posty"}};
     private static ArrayList<MicroServiceData> RunningServices=new ArrayList<>();
+
+    protected static String agentType;
+    protected static Socket clientSocketLast;
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("[AGENT PROCESS]");
 
@@ -18,7 +21,7 @@ public class Agent {
         String agentIP = args[1];
         String managerPort = args[2];
         String managerIP = args[3];
-        String agentType = args[4];
+        agentType = args[4];
 //
 //        for (String s:args
 //             ) {
@@ -58,6 +61,18 @@ public class Agent {
                         System.out.println("[REQUEST FROM MANAGER]" + request);
                         String[] ManagerData = request.split(";");
                         String requestType = ManagerData[0].split(":")[1];
+                        if(ManagerData[ManagerData.length-1].split(":")[0].compareTo("Status")==0) {
+                            PrintWriter outputFromMicroservice = new PrintWriter(clientSocketLast.getOutputStream(), true);
+                            String response=request;
+                            ManagerData = response.split(";");
+                            StringBuilder sb= new StringBuilder(ManagerData[0]);
+                            sb.append(";"+ManagerData[1]);
+                            for (int i=3;i<ManagerData.length;i++){
+                                sb.append(";"+ManagerData[i]);
+                            }
+                            outputFromMicroservice.println(sb.toString());
+                            outputFromMicroservice.flush();
+                        }
                         if (requestType.equals("execution_request")) {
                             String serviceName = ManagerData[3].split(":")[1];
                             if(serviceName.compareTo("logowanie")==0){
@@ -88,7 +103,7 @@ public class Agent {
 
                         }
                         if (requestType.equals("microserviceadress_request")) {
-                            String serviceName = ManagerData[2].split(":")[1];
+                            String serviceName = ManagerData[3].split(":")[1];
                             if(serviceName.compareTo("logowanie")==0){
                                 serviceName="login";
                             }
@@ -145,6 +160,7 @@ public class Agent {
                 while (true) {
 //                    CONNECTION SEGMENT
                     Socket clientSocket = serverSocket.accept();
+                    clientSocketLast=clientSocket;
                     System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
                     new Thread(new MicroserviceThread(clientSocket)).start();
                     }
@@ -193,12 +209,15 @@ public class Agent {
                         if (RequestType[1].equals("microserviceadress_request")) {
                             try (Socket socket = new Socket("localhost", 9100);
                                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true)){
+                                    StringBuilder sb= new StringBuilder(ManagerData[0]);
+                                    sb.append(";"+ManagerData[1]);
+                                    sb.append(";AgentType:"+agentType);
+                                    for (int i=2;i<ManagerData.length;i++){
+                                        sb.append(";"+ManagerData[i]);
+                                    }
+                                    request=sb.toString();
                                     output.println(request);
                                     output.flush();
-                                    BufferedReader input =new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()));
-                                    String response=input.readLine();
-                                    outputFromMicroservice.println(response);
-                                    outputFromMicroservice.flush();
                             }
                             catch (Exception e){
                                 System.out.println("connectToManagerProblem");
