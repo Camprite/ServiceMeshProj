@@ -1,8 +1,10 @@
 import java.io.*;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 
 //  PRZYDATNE :)
@@ -42,11 +44,11 @@ public class Manager {
 
 
 
+    public static Socket[] Agents={null,null,null};
+    public static String[][] AgentsServices={null,null,null};
 
-    public static Socket Agent0;
-    public static Socket Agent1;
-    public static Socket Agent2;
-//    static String RequestToCreateApiGatewayMicroservice = "type:execution_request \n" +
+//    static String RequestToCreateApiGatewayMicroservice =
+//            "type:execution_request \n" +
 //            "message_id: Start Api Gateway Microservice \n" +
 //            "agent_network_address:localhost:9010 \n" +
 //            "service_name:\\ApiGateway.jar\n" +
@@ -59,6 +61,14 @@ public class Manager {
         String ManagerIP = "localhost";
         String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
 
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("config.properties"));
+        } catch (IOException e) {
+            System.err.println("Plik konfiguracyjny nie załadował się.");
+            waitForUserInput();
+        }
+        int apiPort = Integer.parseInt(properties.getProperty("api.gateway.port"));
 
 
 //          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
@@ -125,13 +135,13 @@ public class Manager {
         try {
             if(!isApiGatwayRequestSended){
                 System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
+                PrintWriter output2 = new PrintWriter(Agents[0].getOutputStream(), true);
                 output2.println("type:execution_request;" +
                         "message_id:0;" +
                         "agent_network_address:none;" +
-                        "service_name:ApiGateway.jar;" +
+                        "service_name:apigateway;" +
                         "service_instance_id:1;" +
-                        "socket_configuration:none;" +
+                        "socket_configuration:"+apiPort+";" +
                         "plug_configuration:none");
                 isApiGatwayRequestSended = true;
                 output2.flush();
@@ -140,7 +150,9 @@ public class Manager {
 
             waitForUserInput();
         }
-
+        while (true){
+            waitForUserInput();
+        }
 
 
 
@@ -176,36 +188,70 @@ public class Manager {
                           if (request != null) {
                               System.out.println("Request: "+ request);
                               String[] userData = request.split(";");
-                              String[] requestType = userData[0].split(":");
-                              System.out.println("requestType: "+ requestType[1]);
-                              if(requestType[1].equals("initiation_request")){
-                                  System.out.println("initiation_request has beed detected");
-                                  String[] message_id = userData[1].split(":");
-                                  if(message_id[1].equals("0")){
-                                  System.out.println("AGENT 0 HAS BEEN CONECTED TO MANAGER");
-                                      Agent0 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("1")){
-                                  System.out.println("AGENT 1 HAS BEEN CONECTED TO MANAGER");
-                                      Agent1 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("2")){
-                                  System.out.println("AGENT 2 HAS BEEN CONECTED TO MANAGER");
-                                      Agent2 = this.agentSocket;
-                                  }
-
+                              String requestType = userData[0].split(":")[1];
+                              System.out.println("requestType: "+ requestType);
+                              if(userData[userData.length-1].split(":")[0].compareTo("Status")==0){
+                                  continue;
                               }
-                              if(requestType[1].equals("microserviceadress_request")){
+                              if(requestType.equals("initiation_request")){
+                                  System.out.println("initiation_request has beed detected");
+                                  int index=Integer.parseInt(userData[2].split(":")[1]);
+                                  if(index>=0 && index<=2){
+                                      System.out.println("AGENT "+index+" HAS BEEN CONECTED TO MANAGER");
+                                      Agents[index]=this.agentSocket;
+                                      AgentsServices[index]=userData[4].split(":")[1].split(" ");
+                                  }
+                                output.println(request+";Status:200");
+                                output.flush();
+                              }
+                              else if(requestType.equals("microserviceadress_request")){
                                   System.out.println("microserviceadress_request detected ");
+                                  String serviceName = userData[2].split(":")[1];
+                                  if(serviceName.compareTo("logowanie")==0){
+                                      serviceName="login";
+                                  }
+                                  Socket currentSocket=null;
+                                  for (int i=0;i<3;i++){
+                                      for (String service:AgentsServices[i]){
+                                          if(service.compareTo(serviceName)==0){
+                                              currentSocket=Agents[i];
+                                              break;
+                                          }
+                                      }
+                                  }
                                   try {
-//                                          System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                                          PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-                                          output2.println("Type:microserviceadress_request;Message_id:9013");
-                                          output2.flush();
+                                        if(currentSocket==null){
+                                            throw new Exception("Wrong service name!!!");
+                                        }
+                                        PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                        currentOutput.println(request);
+                                        currentOutput.flush();
+                                        BufferedReader currentInput = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
 
+                                        String response=currentInput.readLine();
+                                      System.out.println(response);
+                                        String[] responseData=response.split(";");
+                                      System.out.println(responseData[4].split(":")[1]);
+                                        while(responseData[4].split(":")[1].compareTo("0")==0){
+                                            int newPort=newPort();
+                                            currentOutput.println("type:execution_request;" +
+                                                    "message_id:0;" +
+                                                    "agent_network_address:none;" +
+                                                    "service_name:"+serviceName+";" +
+                                                    "service_instance_id:1;" +
+                                                    "socket_configuration:"+newPort+";" +
+                                                    "plug_configuration:none");
+                                            currentOutput.flush();
+                                            currentOutput.println(request);
+                                            currentOutput.flush();
+                                            response=currentInput.readLine();
+                                            System.out.println(response);
+                                            responseData=response.split(";");
+                                            System.out.println(responseData[4].split(":")[1]);
+                                        }
+                                        output.println(request+";ServiceIP:"+responseData[3].split(":")[1]+";Port:"+responseData[4].split(":")[1]+";Status:200");
                                   }catch(Exception e){
-
-
+                                      System.out.println(e.getMessage());
                                   }
                               }
 
@@ -231,7 +277,35 @@ public class Manager {
 
         }
 
+        public static int newPort(){
+            Random rand=new Random();
+            int result;
+            while (true){
+                result=rand.nextInt(8000,8999);
+                ServerSocket ss = null;
+                DatagramSocket ds = null;
+                try {
+                    ss = new ServerSocket(result);
+                    ss.setReuseAddress(true);
+                    ds = new DatagramSocket(result);
+                    ds.setReuseAddress(true);
+                    return result;
+                } catch (IOException ignored) {
+                } finally {
+                    if (ds != null) {
+                        ds.close();
+                    }
+                    if (ss != null) {
+                        try {
+                            ss.close();
+                        } catch (IOException ignored) {
+                        }
+                    }
+                }
+            }
+        }
     }
+
 
 
 

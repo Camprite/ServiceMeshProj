@@ -28,8 +28,6 @@ public class ApiGateway {
         try (Socket socket = new Socket("localhost", 9010);
         PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            outputAgent.write("Message from api;:");
-            outputAgent.flush();
             System.out.println("połączono");
             socket.close();
             Thread.sleep(3000);
@@ -64,6 +62,7 @@ public class ApiGateway {
             System.out.println("[REQUEST FROM CLI]: " + request); //[REQUEST FROM CLI]: Type:logowanie;Message_id:1444838425;Line:daw;daw
             String[] requestParts = request.split(";" );
             String requestType = requestParts[0].split(":")[1];
+            String messId = requestParts[1].split(":")[1];
             System.out.println(requestType);
 
             String targetServicePort;
@@ -71,7 +70,7 @@ public class ApiGateway {
 
 
             String  requestToAgent = "Type:microserviceadress_request;" +
-            "Message_id:" + requestType;
+            "Message_id:" + messId + ";ServiceName:"+requestType;
             System.out.println("[Request For Microservice Adress]: " + requestToAgent);
 
             try (Socket socket = new Socket("localhost", 9010);
@@ -80,6 +79,10 @@ public class ApiGateway {
                 outputAgent.println(requestToAgent);
                 System.out.println("[WYSLANO REQUEST DO AGENTA]");
                 outputAgent.flush();
+                String response=inputAgent.readLine();
+                String[] responseData=response.split(";");
+                targetServiceIP=responseData[3].split(":")[1];
+                targetServicePort=responseData[4].split(":")[1];
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();

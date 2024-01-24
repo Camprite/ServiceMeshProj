@@ -4,9 +4,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class Agent {
+    private static final String[][] ServiceRepository={{"apigateway"},{"login","rejestracja"},{"pliki","posty"}};
+    private static ArrayList<MicroServiceData> RunningServices=new ArrayList<>();
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("[AGENT PROCESS]");
 
@@ -39,10 +43,12 @@ public class Agent {
 //            service_repository: [service name list]
                     output.println("type:initiation_request;" +
                             "message_id:"+agentType+";" +
+                            "agentType:"+agentType+";" +
                             "agent_network_address:" + agentPort + ";" +
-                            "service_repository: none"
+                            "service_repository:"+listInString(ServiceRepository[Integer.parseInt(agentType)])
                     );
                     System.out.println("Initiation request has been sended to Manager");
+                    System.out.println(input.readLine());
                 //                    REQUEST SEGMENT
                 while (true) {
                 String request = input.readLine();
@@ -51,29 +57,59 @@ public class Agent {
                         if(request != null) {
                         System.out.println("[REQUEST FROM MANAGER]" + request);
                         String[] ManagerData = request.split(";");
-                        String[] requestType = ManagerData[0].split(":");
-                        if (requestType[1].equals("execution_request")) {
+                        String requestType = ManagerData[0].split(":")[1];
+                        if (requestType.equals("execution_request")) {
+                            String serviceName = ManagerData[3].split(":")[1];
+                            if(serviceName.compareTo("logowanie")==0){
+                                serviceName="login";
+                            }
                             System.out.println("[REQUEST]" + "execution request has been detected");
-                            String servicePath = System.getProperty("user.dir") + "\\" + ManagerData[3].split(":")[1];
+                            String portNumber = ManagerData[5].split(":")[1];
                             try {
-                                ProcessBuilder ApiGateway = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort);
-                                Process API = ApiGateway.start();
-                            } catch (Exception e) {
-                                System.out.println("[APIGATEWAY] Processbuilder failed");
+                                boolean foundService=false;
+                                for (String aService:ServiceRepository[Integer.parseInt(agentType)]){
+                                    if(aService.compareTo(serviceName)==0){
+                                        foundService=true;
+                                        String servicePath = System.getProperty("user.dir") + "\\"+serviceName+".jar";
+                                        ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort,portNumber,agentIP);
+                                        Process process = processBuilder.start();
+                                        RunningServices.add(new MicroServiceData(process,portNumber,agentIP,serviceName));
+                                        break;
+                                    }
+                                }
+                                if(!foundService){
+                                    throw new Exception("Wrong service name!!!");
+                                }
+                            }catch (Exception e) {
+                                System.out.println("[AGENT FAILED] Processbuilder failed");
+                                System.out.println(e.getMessage());
                             }
 
-                        }
-                        if (requestType[1].equals("microserviceadress_request")) {
-                            Socket apiSocket = new Socket("localhost",9000);
-                            PrintWriter apioutput = new PrintWriter(apiSocket.getOutputStream(), true);
-                            apioutput.println("Type:microserviceadress_request;Message_id:9013");
-                            apioutput.flush();
 
+                        }
+                        if (requestType.equals("microserviceadress_request")) {
+                            String serviceName = ManagerData[2].split(":")[1];
+                            if(serviceName.compareTo("logowanie")==0){
+                                serviceName="login";
+                            }
+                            boolean found=false;
+                            for(MicroServiceData msd:RunningServices){
+                                if(msd.ServiceName.compareTo(serviceName)==0){
+                                    output.println(request+";ServiceIP:"+msd.IpNumber+";Port:"+msd.PortNumber+";Status:200");
+                                    output.flush();
+                                    found=true;
+                                    break;
+                                }
+                            }
+                            if (!found){
+                                output.println(request+";ServiceIP:"+0+";Port:"+0+";Status:400");
+                                output.flush();
+                            }
 
                         }
                     }
                 } catch(Exception e) {
-
+                    System.out.println(e.getMessage());
                 }
             }
                 } catch (IOException e) {
@@ -159,6 +195,10 @@ public class Agent {
                                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true)){
                                     output.println(request);
                                     output.flush();
+                                    BufferedReader input =new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()));
+                                    String response=input.readLine();
+                                    outputFromMicroservice.println(response);
+                                    outputFromMicroservice.flush();
                             }
                             catch (Exception e){
                                 System.out.println("connectToManagerProblem");
@@ -192,4 +232,30 @@ public class Agent {
         }
     }
 
+    static class MicroServiceData{
+        protected Process ServiceProcess;
+        protected String PortNumber;
+        protected String IpNumber;
+        protected String ServiceName;
+
+        public MicroServiceData(Process process,String port,String ip,String name){
+            ServiceProcess=process;
+            PortNumber=port;
+            IpNumber=ip;
+            ServiceName=name;
+        }
+    }
+
+    public static String listInString(String[] listOfServices){
+        StringBuilder result=new StringBuilder();
+        for (String s:listOfServices){
+            result.append(s).append(" ");
+        }
+        result.deleteCharAt(result.length() - 1);
+        return result.toString();
+    }
 }
+
+
+
+
