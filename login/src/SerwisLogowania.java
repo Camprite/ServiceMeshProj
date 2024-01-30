@@ -1,11 +1,13 @@
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.Scanner;
 
 public class SerwisLogowania {
+    public static PrintWriter outputAgent;
+    public static String portClient;
+
     public static void main(String[] args) throws Exception {
 
         if(args[0] == null || args[1] == null){
@@ -16,10 +18,30 @@ public class SerwisLogowania {
         String portAgent = args[0];
         String ipAgent = args[1];
         String port = args[2];
+        portClient=port;
         String ip = args[3];
         System.out.println("PORT: " + port);
         System.out.println("IP: " + ip);
+        Runnable myThread = () ->
+        {
+            try {
+                Socket socket = new Socket(ipAgent, Integer.parseInt(portAgent));
+                outputAgent = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                while (true) {
+                    String request = input.readLine();
+                    try {
+                    if(request != null) {
+                        if(request.equals("KILL_ALL")){
+                            System.exit(0);
+                        }
+                    }}catch(Exception ignore){}
+                }
+            } catch (Exception ignore){}};
 
+        Thread run = new Thread(myThread);
+
+        run.start();
 
         Properties properties = new Properties();
         try {

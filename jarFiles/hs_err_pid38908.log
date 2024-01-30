@@ -1,0 +1,180 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ff8ed10a8d3, pid=38908, tid=44100
+#
+# JRE version:  (19.0.2+7) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (19.0.2+7-44, mixed mode, sharing, tiered, unknown gc, windows-amd64)
+# Problematic frame:
+# V  [jvm.dll+0x6ca8d3]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: D:\Projekty\Github\ServiceMeshProj\jarFiles\login.jar localhost 9020 8740 localhost
+
+Host: AMD Ryzen 7 3750H with Radeon Vega Mobile Gfx  , 8 cores, 15G,  Windows 10 , 64 bit Build 19041 (10.0.19041.3636)
+Time: Mon Jan 29 23:29:51 2024  Windows 10 , 64 bit Build 19041 (10.0.19041.3636) elapsed time: 0.182491 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread is native thread
+
+Stack: [0x00000018f6600000,0x00000018f6700000],  sp=0x00000018f66ff240,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6ca8d3]
+
+
+siginfo: EXCEPTION_ACCESS_VIOLATION (0xc0000005), writing address 0x0000000000000000
+
+
+Registers:
+RAX=0x0000000000000000, RBX=0x0000000000000258, RCX=0x28c8fcd61a400000, RDX=0x0000000000000000
+RSP=0x00000018f66ff240, RBP=0x0000000000000009, RSI=0x00000018f66ff2c0, RDI=0x0000000000000258
+R8 =0x0000000000000002, R9 =0x00000018f66ff1b8, R10=0x0000000000000013, R11=0x00000018f66fedb0
+R12=0x0000000000000000, R13=0x00000018f66ff8b8, R14=0x00000018f66ffe30, R15=0x0000000000000001
+RIP=0x00007ff8ed10a8d3, EFLAGS=0x0000000000010202
+
+
+Top of Stack: (sp=0x00000018f66ff240)
+0x00000018f66ff240:   0000000000000258 0000000000000030
+0x00000018f66ff250:   0000000000000022 0000000000000000
+0x00000018f66ff260:   0000000000000258 00007ff8ed120c64
+0x00000018f66ff270:   0000000000000002 00007ff98f79b3c7
+0x00000018f66ff280:   000030704ca3fc15 0000000000000000
+0x00000018f66ff290:   00007ff8ed390cd8 00007ff8ed120c23
+0x00000018f66ff2a0:   0000000000000000 0000000000000009
+0x00000018f66ff2b0:   00000018f66ff8a0 00000018f66ff358
+0x00000018f66ff2c0:   0000000000000000 0000000000000000
+0x00000018f66ff2d0:   0000000000000000 0000000000000000
+0x00000018f66ff2e0:   0000000200000003 00007ff98f79b3c7
+0x00000018f66ff2f0:   0000000000000000 00000018f66ff358
+0x00000018f66ff300:   0000000000000000 00007ff8ed12a6fc
+0x00000018f66ff310:   00000018f66ff380 00000018f66ff8a0
+0x00000018f66ff320:   00007ff8ed390cd8 0000000000000009
+0x00000018f66ff330:   0000000000000000 00007ff8ecb0bca2 
+
+Instructions: (pc=0x00007ff8ed10a8d3)
+0x00007ff8ed10a7d3:   89 44 24 30 48 89 5c 24 28 40 84 ff 74 29 48 8d
+0x00007ff8ed10a7e3:   05 10 73 31 00 48 89 44 24 20 48 8d 05 ec 4b 52
+0x00007ff8ed10a7f3:   00 48 89 44 24 38 48 8d 44 24 50 48 89 44 24 40
+0x00007ff8ed10a803:   e8 68 b4 fb ff eb 27 48 8d 05 cf 4b 52 00 48 89
+0x00007ff8ed10a813:   44 24 38 48 8d 44 24 50 48 89 44 24 40 48 8d 05
+0x00007ff8ed10a823:   e1 72 31 00 48 89 44 24 20 e8 9f b2 fb ff 48 8d
+0x00007ff8ed10a833:   8c 24 28 06 00 00 e8 c2 7c fb ff 48 8d 8c 24 10
+0x00007ff8ed10a843:   06 00 00 e8 35 7c fb ff 48 8d 8c 24 f8 05 00 00
+0x00007ff8ed10a853:   e8 b8 7b fb ff 48 8b 8c 24 50 06 00 00 48 33 cc
+0x00007ff8ed10a863:   e8 78 90 1e 00 4c 8d 9c 24 60 06 00 00 49 8b 5b
+0x00007ff8ed10a873:   10 49 8b 73 20 49 8b e3 5f c3 cc cc cc 40 53 48
+0x00007ff8ed10a883:   83 ec 20 b9 80 f7 00 00 ff 15 a7 bd 1e 00 33 d2
+0x00007ff8ed10a893:   41 b8 78 f7 00 00 48 8b c8 48 8b d8 c7 80 78 f7
+0x00007ff8ed10a8a3:   00 00 ff ff ff ff e8 a4 a2 1e 00 48 89 1d 3b 64
+0x00007ff8ed10a8b3:   52 00 48 83 c4 20 5b c3 cc cc cc cc cc 40 53 48
+0x00007ff8ed10a8c3:   83 ec 20 48 8b d9 48 83 c1 10 ff 15 65 bd 1e 00
+0x00007ff8ed10a8d3:   48 c7 00 00 00 00 00 48 89 58 08 48 83 c4 20 5b
+0x00007ff8ed10a8e3:   c3 cc cc cc cc cc cc cc cc cc cc cc cc 48 ff 25
+0x00007ff8ed10a8f3:   51 bd 1e 00 cc cc cc cc cc cc cc cc cc ba 0c 00
+0x00007ff8ed10a903:   00 00 e9 c6 62 01 00 cc cc cc cc cc cc 40 53 48
+0x00007ff8ed10a913:   83 ec 20 48 8b da 48 83 c2 10 ff 15 2d bd 1e 00
+0x00007ff8ed10a923:   48 c7 00 00 00 00 00 48 89 58 08 48 83 c4 20 5b
+0x00007ff8ed10a933:   c3 cc cc cc cc cc cc cc cc cc cc cc cc c6 05 b1
+0x00007ff8ed10a943:   63 52 00 01 c3 cc cc cc cc cc cc cc cc 48 89 5c
+0x00007ff8ed10a953:   24 10 56 48 83 ec 40 48 8b 1d 8f 63 52 00 48 8b
+0x00007ff8ed10a963:   f1 48 85 db 0f 84 7c 00 00 00 45 33 c0 48 89 7c
+0x00007ff8ed10a973:   24 50 45 33 c9 45 33 db 33 d2 bf ef 1e 00 00 45
+0x00007ff8ed10a983:   33 d2 4a 8b 04 d3 33 c9 48 85 c0 74 0e 48 03 50
+0x00007ff8ed10a993:   08 ff c1 48 8b 00 48 85 c0 75 f2 85 c9 41 8d 41
+0x00007ff8ed10a9a3:   01 41 0f 4e c1 44 03 c1 41 3b cb 44 8b c8 44 0f
+0x00007ff8ed10a9b3:   4f d9 49 ff c2 4c 3b d7 7c c8 44 89 5c 24 30 2b
+0x00007ff8ed10a9c3:   f8 48 89 54 24 28 48 8b ce 48 8d 15 ed 75 31 00 
+
+
+
+---------------  P R O C E S S  ---------------
+
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+GC Precious Log:
+<Not initialized>
+
+
+Dynamic libraries:
+0x00007ff6182b0000 - 0x00007ff6182c0000 	C:\Program Files\Java\jdk-19\bin\java.exe
+0x00007ff98f770000 - 0x00007ff98f968000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ff98d970000 - 0x00007ff98da2d000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ff98d130000 - 0x00007ff98d426000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ff98d530000 - 0x00007ff98d630000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ff956a20000 - 0x00007ff956a38000 	C:\Program Files\Java\jdk-19\bin\jli.dll
+0x00007ff957dd0000 - 0x00007ff957deb000 	C:\Program Files\Java\jdk-19\bin\VCRUNTIME140.dll
+0x00007ff98f200000 - 0x00007ff98f2b3000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ff98e600000 - 0x00007ff98e69e000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ff98eae0000 - 0x00007ff98eb7f000 	C:\WINDOWS\System32\sechost.dll
+0x00007ff98e830000 - 0x00007ff98e956000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ff98d790000 - 0x00007ff98d7b7000 	C:\WINDOWS\System32\bcrypt.dll
+0x00007ff98d7d0000 - 0x00007ff98d96e000 	C:\WINDOWS\System32\USER32.dll
+0x00007ff98cfe0000 - 0x00007ff98d002000 	C:\WINDOWS\System32\win32u.dll
+0x00007ff98e980000 - 0x00007ff98e9ac000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ff98d010000 - 0x00007ff98d12a000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ff98cf40000 - 0x00007ff98cfdd000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ff97c250000 - 0x00007ff97c4ea000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.3636_none_60b6a03d71f818d5\COMCTL32.dll
+0x00007ff985700000 - 0x00007ff98570a000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ff98f460000 - 0x00007ff98f490000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ff95fb00000 - 0x00007ff95fb0c000 	C:\Program Files\Java\jdk-19\bin\vcruntime140_1.dll
+0x00007ff947040000 - 0x00007ff9470ce000 	C:\Program Files\Java\jdk-19\bin\msvcp140.dll
+0x00007ff8eca40000 - 0x00007ff8ed700000 	C:\Program Files\Java\jdk-19\bin\server\jvm.dll
+0x00007ff988600000 - 0x00007ff988609000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ff98f620000 - 0x00007ff98f68b000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ff982300000 - 0x00007ff982327000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ff98b680000 - 0x00007ff98b692000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ff95faa0000 - 0x00007ff95faaa000 	C:\Program Files\Java\jdk-19\bin\jimage.dll
+0x00007ff98aa30000 - 0x00007ff98ac14000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ff976870000 - 0x00007ff9768a4000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ff98ce40000 - 0x00007ff98cec2000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialization error.
+
+VM Arguments:
+java_command: D:\Projekty\Github\ServiceMeshProj\jarFiles\login.jar localhost 9020 8740 localhost
+java_class_path (initial): D:\Projekty\Github\ServiceMeshProj\jarFiles\login.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Environment Variables:
+PATH=C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Programy\MATLAB\R2020a\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\PowerShell\7-preview\preview;C:\Program Files\PowerShell\7\;C:\Program Files\Git\cmd;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\szymo\miniconda3;C:\Users\szymo\miniconda3\Library\mingw-w64\bin;C:\Users\szymo\miniconda3\Library\usr\bin;C:\Users\szymo\miniconda3\Library\bin;C:\Users\szymo\miniconda3\Scripts;C:\Users\szymo\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\szymo\AppData\Local\Programs\Python\Python311\;C:\Users\szymo\anaconda3\python.exe;C:\Users\szymo\AppData\Local\Microsoft\WindowsApps;C:\Programy\SCIPOptSuite 7.0.0\bin;C:\Users\szymo\AppData\Local\GitHubDesktop\bin;C:\Programy\Microsoft VS Code\bin;C:\PathPrograms
+USERNAME=szymo
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD
+TMP=C:\Users\szymo\AppData\Local\Temp
+TEMP=C:\Users\szymo\AppData\Local\Temp
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 10 , 64 bit Build 19041 (10.0.19041.3636)
+OS uptime: 3 days 13:27 hours
+
+CPU: total 8 (initial active 0) 
+
+Memory: 4k page, system-wide physical 15807M (2427M free)
+TotalPageFile size 64959M (AvailPageFile size 5M)
+current process WorkingSet (physical memory assigned to process): 7M, peak: 7M
+current process commit charge ("private bytes"): 2M, peak: 2M
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (19.0.2+7-44) for windows-amd64 JRE (19.0.2+7-44), built on 2022-11-30T18:02:09Z by "mach5one" with MS VC++ 17.1 (VS2022)
+
+END.

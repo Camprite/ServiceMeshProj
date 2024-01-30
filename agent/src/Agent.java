@@ -11,6 +11,7 @@ import java.util.Scanner;
 public class Agent {
     private static final String[][] ServiceRepository={{"apigateway"},{"login","rejestracja"},{"pliki","posty"}};
     private static ArrayList<MicroServiceData> RunningServices=new ArrayList<>();
+    private static ArrayList<Socket> allSockets = new ArrayList<>();
 
     protected static String agentType;
     protected static Socket clientSocketLast;
@@ -22,13 +23,6 @@ public class Agent {
         String managerPort = args[2];
         String managerIP = args[3];
         agentType = args[4];
-//
-//        for (String s:args
-//             ) {
-//            System.out.println(s);
-//        }
-
-
 
 
 
@@ -40,60 +34,52 @@ public class Agent {
                      BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
 //            --------------------------------------Register to Manager request--------------------------------------
-//            type: initiation_request
-//            message_id: [integer]
-//            agent_network_address: [IPv6]
-//            service_repository: [service name list]
-                    output.println("type:initiation_request;" +
-                            "message_id:"+agentType+";" +
-                            "agentType:"+agentType+";" +
-                            "agent_network_address:" + agentPort + ";" +
-                            "service_repository:"+listInString(ServiceRepository[Integer.parseInt(agentType)])
-                    );
-                    System.out.println("Initiation request has been sended to Manager");
+//            Type: initiation_request
+//            Message_id: [integer]
+//            Service_name: [service name list]
+//            Agent_type: agentType
+//            Line: ""
+
+                    output.println(new Requests("initiation_request",1+agentType,listInString(ServiceRepository[Integer.parseInt(agentType)]),agentType,""));
+                    System.out.println("Initiation request has been sent to Manager");
+                    System.out.print("Response: ");
                     System.out.println(input.readLine());
+
                 //                    REQUEST SEGMENT
                 while (true) {
                 String request = input.readLine();
 
                 try {
-                        if(request != null) {
-                        System.out.println("[REQUEST FROM MANAGER]" + request);
-                        String[] ManagerData = request.split(";");
-                        String requestType = ManagerData[0].split(":")[1];
-                        if(ManagerData[ManagerData.length-1].split(":")[0].compareTo("Status")==0) {
-                            PrintWriter outputFromMicroservice = new PrintWriter(clientSocketLast.getOutputStream(), true);
-                            String response=request;
-                            ManagerData = response.split(";");
-                            StringBuilder sb= new StringBuilder(ManagerData[0]);
-                            sb.append(";"+ManagerData[1]);
-                            for (int i=3;i<ManagerData.length;i++){
-                                sb.append(";"+ManagerData[i]);
+                    if(request != null) {
+                        System.out.println("[REQUEST FROM MANAGER]: " + request);
+                        if(request.equals("KILL_ALL")){
+                            for (Socket socket_last:allSockets){
+                                PrintWriter last_output = new PrintWriter(socket_last.getOutputStream(), true);
+                                last_output.println("KILL_ALL");
+                                last_output.flush();
                             }
-                            outputFromMicroservice.println(sb.toString());
+                            System.exit(0);
+                        }
+                        boolean IsItStatus = request.split(";")[2].split(":")[0].compareTo("Status") == 0;
+                        if(IsItStatus) {
+                            PrintWriter outputFromMicroservice = new PrintWriter(clientSocketLast.getOutputStream(), true);
+                            outputFromMicroservice.println(request);
                             outputFromMicroservice.flush();
                             continue;
                         }
-                        if (requestType.equals("execution_request")) {
-                            String serviceName = ManagerData[3].split(":")[1];
-                            if(serviceName.compareTo("logowanie")==0){
-                                serviceName="login";
-                            } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
-                                serviceName="posty";
-                            } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
-                                serviceName="pliki";
-                            }
-                            System.out.println("[REQUEST]" + "execution request has been detected");
-                            String portNumber = ManagerData[5].split(":")[1];
+                        Requests true_request = new Requests(request);
+                        if (true_request.Type.equals("execution_request")) {
+                            System.out.println("[REQUEST]: execution request has been detected");
+                            String portNumber = true_request.Line;
                             try {
                                 boolean foundService=false;
                                 for (String aService:ServiceRepository[Integer.parseInt(agentType)]){
-                                    if(aService.compareTo(serviceName)==0){
+                                    if(aService.compareTo(true_request.Service_name)==0){
                                         foundService=true;
-                                        String servicePath = System.getProperty("user.dir") + "\\"+serviceName+".jar";
+                                        String servicePath = System.getProperty("user.dir") + "\\"+true_request.Service_name+".jar";
                                         ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIP, agentPort,portNumber,agentIP);
                                         Process process = processBuilder.start();
-                                        RunningServices.add(new MicroServiceData(process,portNumber,agentIP,serviceName));
+                                        RunningServices.add(new MicroServiceData(process,portNumber,agentIP,true_request.Service_name));
                                         break;
                                     }
                                 }
@@ -107,26 +93,20 @@ public class Agent {
 
 
                         }
-                        if (requestType.equals("microserviceadress_request")) {
-                            String serviceName = ManagerData[3].split(":")[1];
-                            if(serviceName.compareTo("logowanie")==0){
-                                serviceName="login";
-                            } else if(serviceName.compareTo("post")==0 || serviceName.compareTo("czytaj-posts")==0){
-                                serviceName="posty";
-                            } else if(serviceName.compareTo("wgraj_plik")==0 || serviceName.compareTo("pobierz_plik")==0){
-                                serviceName="pliki";
-                            }
+                        if (true_request.Type.equals("microserviceadress_request")) {
                             boolean found=false;
                             for(MicroServiceData msd:RunningServices){
-                                if(msd.ServiceName.compareTo(serviceName)==0){
-                                    output.println(request+";ServiceIP:"+msd.IpNumber+";Port:"+msd.PortNumber+";Status:200");
+                                if(msd.ServiceName.compareTo(true_request.Service_name)==0 && !msd.isBusy()){
+                                    msd.toggleBusy();
+                                    true_request.Line = msd.IpNumber+";"+msd.PortNumber;
+                                    output.println(new Responses(true_request,"200"));
                                     output.flush();
                                     found=true;
                                     break;
                                 }
                             }
                             if (!found){
-                                output.println(request+";ServiceIP:"+0+";Port:"+0+";Status:400");
+                                output.println(new Responses(true_request,"400"));
                                 output.flush();
                             }
 
@@ -137,7 +117,7 @@ public class Agent {
                 }
             }
                 } catch (IOException e) {
-                    System.err.println("Błąd połączenia z Managerem." + e.getMessage());
+                    System.err.println("Błąd połączenia z Managerem: " + e.getMessage());
 
                 }
             };//THREAD END
@@ -157,23 +137,18 @@ public class Agent {
 
 
 //    ---------------------------------------------Register to Manager END--------------------------------------------------
-//            "type:execution_request;" +
-//                    "message_id:0;" +
-//                    "agent_network_address:none;" +
-//                    "service_name:ApiGateway.jar;" +
-//                    "service_instance_id:1;" +
-//                    "socket_configuration:none;" +
-//                    "plug_configuration:none");
+
 
             try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(agentPort))) {
                 while (true) {
 //                    CONNECTION SEGMENT
-                    Socket clientSocket = serverSocket.accept();
-                    clientSocketLast=clientSocket;
-                    System.out.println("Microservice connected on port: " + clientSocket.getLocalPort());
-                    new Thread(new MicroserviceThread(clientSocket)).start();
+                        Socket clientSocket = serverSocket.accept();
+                        String clientPort = String.valueOf(clientSocket.getLocalPort());
+                        allSockets.add(clientSocket);
+                        clientSocketLast = clientSocket;
+                        System.out.println("Microservice connected on port: " + clientPort);
+                        new Thread(new MicroserviceThread(clientSocket)).start();
                     }
-
 
             } catch (IOException e) {
                 System.err.println("500;Login Service ERROR. " + e.getMessage());
@@ -182,15 +157,6 @@ public class Agent {
 
 
         waitForUserInput();
-
-//        Connection to Maganger
-//        Get request from Manager
-//        Open specific service by response from Manager data
-//        Return to maganger status of processes
-
-
-
-
 
     }
 
@@ -203,42 +169,51 @@ public class Agent {
         @Override
         public void run() {
 
-            try (BufferedReader inputFromMicroservice = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()));
-                 PrintWriter outputFromMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true)) {
+            try (BufferedReader inputFromMicroservice = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()))) {
                 while (true) {
-                        String request = inputFromMicroservice.readLine();
+                    String request = inputFromMicroservice.readLine();
                     if(request != null){
                         System.out.println("[REQUEST]: " + request);
                         try {
-                        String[] ManagerData = request.split(";");
-                        String[] RequestType = ManagerData[0].split(":");
-                        if (RequestType[1].equals("execution_request")) {
-                            System.out.println("execution request has been detected");
-                        }
-                        if (RequestType[1].equals("microserviceadress_request")) {
-                            try (Socket socket = new Socket("localhost", 9100);
-                                 PrintWriter output = new PrintWriter(socket.getOutputStream(), true)){
-                                    StringBuilder sb= new StringBuilder(ManagerData[0]);
-                                    sb.append(";"+ManagerData[1]);
-                                    sb.append(";AgentType:"+agentType);
-                                    for (int i=2;i<ManagerData.length;i++){
-                                        sb.append(";"+ManagerData[i]);
+                            boolean IsItStatus = request.split(";")[2].split(":")[0].compareTo("Status") == 0;
+                            if(IsItStatus){
+                                Responses response = new Responses(request);
+                                String portNumber = response.Line;
+                                for (MicroServiceData msd:RunningServices){
+                                    if(msd.PortNumber.equals(portNumber)){
+                                        msd.toggleBusy();
+                                        break;
                                     }
-                                    request=sb.toString();
-                                    output.println(request);
+                                }
+                                continue;
+                            }
+                            Requests true_request = new Requests(request);
+                            if(true_request.Type.equals("not_busy")){
+                                for (MicroServiceData msd:RunningServices){
+                                    if(msd.PortNumber.equals(true_request.Line)){
+                                        msd.toggleBusy();
+                                        break;
+                                    }
+                                }
+                            }
+                            if (true_request.Type.equals("execution_request")) {
+                                System.out.println("execution request has been detected");
+                            }
+                            if (true_request.Type.equals("microserviceadress_request")) {
+                                try (Socket socket = new Socket("localhost", 9100);
+                                    PrintWriter output = new PrintWriter(socket.getOutputStream(), true)){
+                                    true_request.Agent_type = agentType;
+                                    output.println(true_request);
                                     output.flush();
-                            }
-                            catch (Exception e){
-                                System.out.println("connectToManagerProblem");
-                            }
-                      }
-
-
-                    } catch (Exception e) {
-                        System.out.println("Nie mogę podzielić requesta");
-//                        e.printStackTrace();
-                    }}
-
+                                }
+                                catch (Exception e){
+                                    System.out.println("connectToManagerProblem");
+                                }
+                          }
+                        } catch (Exception e) {
+                            System.out.println("Nie mogę podzielić requesta");
+                        }
+                    }
                 }
 
             } catch (IOException e) {
@@ -266,11 +241,22 @@ public class Agent {
         protected String IpNumber;
         protected String ServiceName;
 
+        protected boolean IsBusy;
+
         public MicroServiceData(Process process,String port,String ip,String name){
             ServiceProcess=process;
             PortNumber=port;
             IpNumber=ip;
             ServiceName=name;
+            IsBusy = false;
+        }
+
+        public boolean isBusy(){
+            return IsBusy;
+        }
+
+        public void toggleBusy(){
+            IsBusy = !IsBusy;
         }
     }
 

@@ -20,30 +20,40 @@ public class Logowanie implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String request = input.readLine();
-            String[] userData = request.split(";");
-            if (userData.length != 4) {
-                output.println("Nieprawidłowe dane uwierzytelniające.");
+            String request_string = input.readLine();
+            Requests request = new Requests(request_string);
+            Responses response = new Responses(request,"200");
+            if (request.Line.split(";").length != 2) {
+                response.Line = "Nieprawidłowe dane uwierzytelniające.";
+                response.Status = "400";
+                output.println(response);
+                SerwisLogowania.outputAgent.println(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
+                SerwisLogowania.outputAgent.flush();
                 return;
             }
 
-            String username = userData[2].split(":")[1];
-            String password = userData[3];
+            String username = request.Line.split(";")[0];
+            String password = request.Line.split(";")[1];
             try (Connection connection = PolaczenieBaza.getConnection()) {
                 PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
                 checkUserStatement.setString(1, username);
                 ResultSet resultSet = checkUserStatement.executeQuery();
 
                 if (resultSet.next()) {
-
                     if (resultSet.getString("password").equals(password)) {
-                        output.println("200;Zalogowano");
+                        response.Line = "Zalogowano!";
                     } else {
-                        output.println("Błędne hasło.");
+                        response.Status = "400";
+                        response.Line = "Błędne hasło.";
                     }
+                    output.println(response);
                 } else {
-                    output.println("Użytkownik nie istnieje DB.");
+                    response.Status = "400";
+                    response.Line = "Użytkownik nie istnieje DB.";
+                    output.println(response);
                 }
+                SerwisLogowania.outputAgent.println(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
+                SerwisLogowania.outputAgent.flush();
             } catch (SQLException e) {
                 System.err.println("Błąd.");
                 e.printStackTrace();

@@ -8,13 +8,14 @@ import java.util.Scanner;
 public class ApiGateway {
 
 
-
+    protected static String AgentIp,AgentPort;
 
     public static void main(String[] args) {
 
-        String AgentIp = args[0];
-        String AgentPort = args[1];
-
+        AgentIp = args[0];
+        AgentPort = args[1];
+        String ApiIp = args[2];
+        String ApiPort = args[3];
 
         System.out.println("ApiGateway");
 
@@ -25,9 +26,7 @@ public class ApiGateway {
             System.err.println("Plik konfiguracyjny nie załadował się.");
             waitForUserInput();
         }
-        try (Socket socket = new Socket("localhost", 9010);
-        PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try (Socket socket = new Socket(AgentIp, Integer.parseInt(AgentPort))) {
             System.out.println("połączono");
             socket.close();
             Thread.sleep(3000);
@@ -39,11 +38,13 @@ public class ApiGateway {
 
 
         int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port")); //NOT TO CHANGE
-
+//        int gatewayPort = Integer.parseInt(ApiPort);
+        System.out.println(ApiPort);
         try (ServerSocket serverSocket = new ServerSocket(gatewayPort)) {
             while (true) {
+                System.out.println("HERE");
                 Socket clientSocket = serverSocket.accept();
-                new Thread(() -> processRequest(clientSocket, properties,AgentIp,AgentPort)).start();
+                new Thread(() -> processRequest(clientSocket,AgentIp,AgentPort)).start();
             }
         } catch (IOException e) {
             System.out.println(gatewayPort);
@@ -54,37 +55,31 @@ public class ApiGateway {
 
     }
 
-    private static void processRequest(Socket clientSocket, Properties properties,String ip, String port) {
+    private static void processRequest(Socket clientSocket,String ip, String port) {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             String request = input.readLine();
             System.out.println("[REQUEST FROM CLI]: " + request); //[REQUEST FROM CLI]: Type:logowanie;Message_id:1444838425;Line:daw;daw
-            String[] requestParts = request.split(";" );
-            String requestType = requestParts[0].split(":")[1];
-            String messId = requestParts[1].split(":")[1];
-            System.out.println(requestType);
+            Requests new_request = new Requests(request);
 
             String targetServicePort="";
             String targetServiceIP="";
 
-
-            String  requestToAgent = "Type:microserviceadress_request;" +
-            "Message_id:" + messId + ";ServiceName:"+requestType;
+            Requests requestToAgent = new Requests("microserviceadress_request",new_request.Message_id,new_request.Service_name,new_request.Agent_type,"");
             System.out.println("[Request For Microservice Adress]: " + requestToAgent);
 
-            try (Socket socket = new Socket("localhost", 9010);
+            try (Socket socket = new Socket(AgentIp, Integer.parseInt(AgentPort));
                  PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader inputAgent = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 outputAgent.println(requestToAgent);
                 System.out.println("[WYSLANO REQUEST DO AGENTA]");
                 outputAgent.flush();
                 String response=inputAgent.readLine();
-                String[] responseData=response.split(";");
-                targetServiceIP=responseData[3].split(":")[1];
-                System.out.println(targetServiceIP);
-                targetServicePort=responseData[4].split(":")[1];
-                System.out.println(targetServicePort);
+                System.out.println("Response: "+response);
+                Responses new_response = new Responses(response);
+                targetServiceIP=new_response.Line.split(";")[0];
+                targetServicePort=new_response.Line.split(";")[1];
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();
@@ -121,15 +116,12 @@ public class ApiGateway {
 
             }
 
-            if (requestType.equals("wgraj_plik")) {
+            if (new_request.Type.equals("wgraj_plik")) {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
                      PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                      BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
-                    String[] parts = request.split(" ");
-                    String destinationFileName = parts[parts.length - 2];
-                    String encodedFile = parts[parts.length - 1];
 
-                    targetOutput.println("wgraj_plik;" + destinationFileName + ";" + encodedFile);
+                    targetOutput.println(new_request);
 
                     String response = targetInput.readLine();
                     output.print(response);
@@ -137,12 +129,12 @@ public class ApiGateway {
                 } catch (IOException e) {
                     System.err.println("Błędne przekazanie plików ");
                 }
-            } else if (requestType.equals("pobierz_plik")) {
+            } else if (new_request.Type.equals("pobierz_plik")) {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
 
-                    targetOutput.println(request);
+                    targetOutput.println(new_request);
 
                     String response = targetInput.readLine();
                     output.println(response);
@@ -156,7 +148,7 @@ public class ApiGateway {
                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
 
-                    targetOutput.println(request);
+                    targetOutput.println(new_request);
                     System.out.println("Otrzymano połączenie");
                     String response = targetInput.readLine();
                     output.print(response);
