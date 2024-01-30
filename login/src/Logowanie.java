@@ -23,12 +23,13 @@ public class Logowanie implements Runnable {
             String request_string = input.readLine();
             Requests request = new Requests(request_string);
             Responses response = new Responses(request,"200");
+
             if (request.Line.split(";").length != 2) {
                 response.Line = "Nieprawidłowe dane uwierzytelniające.";
                 response.Status = "400";
                 output.println(response);
-                SerwisLogowania.outputAgent.println(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
-                SerwisLogowania.outputAgent.flush();
+                output.flush();
+                SerwisLogowania.toSend.add(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
                 return;
             }
 
@@ -52,8 +53,7 @@ public class Logowanie implements Runnable {
                     response.Line = "Użytkownik nie istnieje DB.";
                     output.println(response);
                 }
-                SerwisLogowania.outputAgent.println(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
-                SerwisLogowania.outputAgent.flush();
+                SerwisLogowania.toSend.add(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
             } catch (SQLException e) {
                 System.err.println("Błąd.");
                 e.printStackTrace();

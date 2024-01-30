@@ -9,6 +9,9 @@ public class Requests {
         Agent_type = split_request[3].split(":")[1];
         if(split_request[4].split(":").length > 1){
             StringBuilder build_line = new StringBuilder(split_request[4].split(":")[1]);
+            for (int i=2; i<split_request[4].split(":").length;i++ ){
+                build_line.append(":").append(split_request[4].split(":")[i]);
+            }
             for (int i=5; i<split_request.length;i++){
                 build_line.append(";");
                 build_line.append(split_request[i]);

@@ -9,37 +9,6 @@ import java.util.Scanner;
 
 import static java.lang.System.exit;
 
-//  PRZYDATNE :)
-//  netstat -ano | find "9000"
-//  taskkill /F /PID your_PID
-//
-
-
-/*
-jeśli przy otrzymaniu requesta nie ma w arrayliście połączeń zadanego typu np:
-request: logowanie
-
-arraylist Połączenia:{rejestracja,posty}
-arraylist Agenci:{}
-
-klasa połączenie = Typ Serwisu, obiekt klasy agent, ip, port
-
-klasa agent = id Aganta, arraylista obsługiwanych serwisów, ip, port
-
-utwórz nowy serwis logowanie i dodaj go do arraylisty Połączenia
-
-
-Request from Manager to the agent to execute the instance i of service A
-        type: execution_request
-        message_id: n
-        agent_network_address: NA_i
-        service_name: A
-        service_instance_id: i
-        socket_configuration: [configuration of sockets]
-        plug_configuration: [configuration of plugs]
-
-
- */
 
 public class Manager {
 
@@ -62,7 +31,6 @@ public class Manager {
         String ManagerPort = "9100";
         String ManagerIP = "localhost";
         String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
-
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));

@@ -149,6 +149,7 @@ public class Interfejs {
             }
             Responses response = new Responses(response_String);
 
+            System.out.println("Status odpowiedzi: "+response.Status);
             if (response.Status.equals("200")) {
                 if (response.Type.equals("logowanie") || response.Type.equals("rejestracja")) {
                     obecnyUser = login;
@@ -157,7 +158,7 @@ public class Interfejs {
                 }
             }
             if (response.Status.equals("299")) {
-                String[] posts = response.Line.split("\t%\t");
+                String[] posts = response.Line.split(";");
                 for (String post : posts) {
                     System.out.println(post);
                 }

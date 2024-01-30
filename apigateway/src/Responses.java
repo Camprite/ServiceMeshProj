@@ -14,6 +14,9 @@ public class Responses {
         }
         if(split_request[5].split(":").length > 1){
             StringBuilder build_line = new StringBuilder(split_request[5].split(":")[1]);
+            for (int i=2; i<split_request[5].split(":").length;i++ ){
+                build_line.append(":").append(split_request[5].split(":")[i]);
+            }
             for (int i=6; i<split_request.length;i++){
                 build_line.append(";");
                 build_line.append(split_request[i]);

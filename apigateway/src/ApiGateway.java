@@ -39,10 +39,8 @@ public class ApiGateway {
 
         int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port")); //NOT TO CHANGE
 //        int gatewayPort = Integer.parseInt(ApiPort);
-        System.out.println(ApiPort);
         try (ServerSocket serverSocket = new ServerSocket(gatewayPort)) {
             while (true) {
-                System.out.println("HERE");
                 Socket clientSocket = serverSocket.accept();
                 new Thread(() -> processRequest(clientSocket,AgentIp,AgentPort)).start();
             }
