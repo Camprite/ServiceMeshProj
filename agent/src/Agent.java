@@ -52,14 +52,7 @@ public class Agent {
                 try {
                     if(request != null) {
                         System.out.println("[REQUEST FROM MANAGER]: " + request);
-                        if(request.equals("KILL_ALL")){
-                            for (Socket socket_last:allSockets){
-                                PrintWriter last_output = new PrintWriter(socket_last.getOutputStream(), true);
-                                last_output.println("KILL_ALL");
-                                last_output.flush();
-                            }
-                            System.exit(0);
-                        }
+
                         boolean IsItStatus = request.split(";")[2].split(":")[0].compareTo("Status") == 0;
                         if(IsItStatus) {
                             PrintWriter outputFromMicroservice = new PrintWriter(clientSocketLast.getOutputStream(), true);

@@ -83,30 +83,7 @@ public class ApiGateway {
                 waitForUserInput();
             }
 
-//            switch (requestType) {
-//                case "rejestracja" -> {
-//                    targetServicePort = properties.getProperty("registration.service.port");
-//                    targetServiceIP = properties.getProperty("registration.service.ip");
-//                }
-//                case "logowanie" -> {
-//                    System.out.println("[LOGIN REQUEST]");
-//                    targetServicePort = properties.getProperty("login.service.port");
-//                    targetServiceIP = properties.getProperty("login.service.ip");
-//                }
-//                case "post", "czytaj-posts" -> {
-//                    targetServicePort = properties.getProperty("post.service.port");
-//                    targetServiceIP = properties.getProperty("post.service.ip");
-//                }
-//                case "wgraj_plik", "pobierz_plik" -> {
-//                    targetServicePort = properties.getProperty("file.service.port");
-//                    targetServiceIP = properties.getProperty("file.service.ip");
-//                }
-//                default -> {
-//                    System.out.println("Błąd. Nieznany typ zapytania.");
-//                    return;
-//                }
-//            }
-//
+
             int targetPort = Integer.parseInt(targetServicePort);
             try {
                 Thread.sleep(2000);
@@ -114,7 +91,6 @@ public class ApiGateway {
 
             }
 
-            if (new_request.Type.equals("wgraj_plik")) {
                 try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
                      PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
                      BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
@@ -127,37 +103,7 @@ public class ApiGateway {
                 } catch (IOException e) {
                     System.err.println("Błędne przekazanie plików ");
                 }
-            } else if (new_request.Type.equals("pobierz_plik")) {
-                try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
-                    PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
-                    BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
 
-                    targetOutput.println(new_request);
-
-                    String response = targetInput.readLine();
-                    output.println(response);
-                    output.flush();
-                } catch (IOException e) {
-                    System.err.println("Błędne żądanie przekierowania.");
-                    waitForUserInput();
-                }
-            } else {
-                try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
-                    PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
-                    BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
-
-                    targetOutput.println(new_request);
-                    System.out.println("Otrzymano połączenie");
-                    String response = targetInput.readLine();
-                    output.print(response);
-                    output.flush();
-                } catch (IOException e) {
-                    System.err.println("Błędne żądanie przekierowania.");
-                    e.printStackTrace();
-                    System.out.println(e.getMessage());
-                    waitForUserInput();
-                }
-            }
         } catch (IOException e) {
             System.err.println("Błąd przetwarzania żądania");
         } finally {

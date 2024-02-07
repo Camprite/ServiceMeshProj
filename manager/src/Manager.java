@@ -126,25 +126,10 @@ public class Manager {
                 Scanner scan = new Scanner(System.in);
                 String input = "";
                 while (true) {
-                    System.out.println("Type KILL_ALL to end program: ");
+
                     input = scan.nextLine();
                     System.out.println("Input: "+input);
-                    if(input.equals("KILL_ALL")){
-                        try {
-                            for (Socket agent : Agents) {
 
-                                PrintWriter last_output = new PrintWriter(agent.getOutputStream(), true);
-                                last_output.println("KILL_ALL");
-                                last_output.flush();
-
-                            }
-                            Thread.sleep(2000);
-                            for (Process process:AgentProcesses){
-                                process.destroy();
-                            }
-                            exit(0);
-                        } catch(Exception ingnore){}
-                    }
                 }
             }
         });
