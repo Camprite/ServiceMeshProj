@@ -1,103 +1,67 @@
 import java.io.*;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 
-//  PRZYDATNE :)
-//  netstat -ano | find "9000"
-//  taskkill /F /PID your_PID
+import static java.lang.System.exit;
+
+//Braki w ssmmp
+// W zapytaniach do agenta powinno być pole na ich id by dało się ich łatwo identyfikować
+// uzywam aktualnie Agent_type
 //
-
-
-/*
-jeśli przy otrzymaniu requesta nie ma w arrayliście połączeń zadanego typu np:
-request: logowanie
-
-arraylist Połączenia:{rejestracja,posty}
-arraylist Agenci:{}
-
-klasa połączenie = Typ Serwisu, obiekt klasy agent, ip, port
-
-klasa agent = id Aganta, arraylista obsługiwanych serwisów, ip, port
-
-utwórz nowy serwis logowanie i dodaj go do arraylisty Połączenia
-
-
-Request from Manager to the agent to execute the instance i of service A
-        type: execution_request
-        message_id: n
-        agent_network_address: NA_i
-        service_name: A
-        service_instance_id: i
-        socket_configuration: [configuration of sockets]
-        plug_configuration: [configuration of plugs]
-
-
- */
-
 public class Manager {
 
 
 
 
+//    public static Socket[] Agents={null,null,null};
+    public static Agents agents = new Agents();
 
-    public static Socket Agent0;
-    public static Socket Agent1;
-    public static Socket Agent2;
-//    static String RequestToCreateApiGatewayMicroservice = "type:execution_request \n" +
-//            "message_id: Start Api Gateway Microservice \n" +
-//            "agent_network_address:localhost:9010 \n" +
-//            "service_name:\\ApiGateway.jar\n" +
-//            "service_instance_id: 0\n" +
-//            "socket_configuration: none\n" +
-//            "plug_configuration: none\n";
+    //    public static String[][] AgentsServices={null,null,null};
+    public static Process[] AgentProcesses={null,null,null};
+
+//    public static boolean firstAgent = false;
+
+//    static String RequestToCreateApiGatewayMicroservice =
+//            "Type:execution_request" +
+//            "Message_id:0" +
+//            "Service_name:apigateway" +
+//            "Agent_type:""" +
+//            "Line:9000" +
+
     public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("[MANAGER]");
-        String ManagerPort = "9100";
-        String ManagerIP = "localhost";
-        String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
+//        String[] args =
+//        [0] = Manager IP
+//        [1] = Manager Port
 
+
+
+        String ManagerPort = args[0];
+        String ManagerIP = args[1];
+//        String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
 
 
 //          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
-        ProcessBuilder pbAPIGatewayAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9010", "localhost", ManagerPort, ManagerIP, "0");
-        ProcessBuilder pbLoginRegisterAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9020", "localhost", ManagerPort, ManagerIP, "1");
-        ProcessBuilder pbPostsAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9030", "localhost", ManagerPort, ManagerIP, "2");
+//        ProcessBuilder pbAPIGatewayAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9010", "localhost", ManagerPort, ManagerIP, "0");
+//        ProcessBuilder pbLoginRegisterAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9020", "localhost", ManagerPort, ManagerIP, "1");
+//        ProcessBuilder pbPostsAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9030", "localhost", ManagerPort, ManagerIP, "2");
+//            Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
+//            AgentProcesses[0] = ProcAPIGatewayAgent;
+//            Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
+//            AgentProcesses[1] = ProcLoginRegisterAgent;
+//            Process ProcPostsAgent = pbPostsAgent.start();
+//            AgentProcesses[2] = ProcPostsAgent;
 
-//Opening Agent processes
-        try {
-            Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
-            Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
-            Process ProcPostsAgent = pbPostsAgent.start();
-            if(!ProcAPIGatewayAgent.isAlive() || !ProcLoginRegisterAgent.isAlive() || !ProcPostsAgent.isAlive()){
-//            Thread.sleep(200); // Agents need have time to open process
-                System.out.println();
-                System.out.println("isAlive APIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
-                System.out.println("isAlive LoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
-                System.out.println("isAlive PostsAgent: " + ProcPostsAgent.isAlive());
-                System.out.println();
-//                throw new Exception("Agent has been not opened");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            waitForUserInput();
-        } catch (Exception e) {
-            e.printStackTrace();
-            waitForUserInput();
-        }
-
-
-
-
-
-
-
-
-        Runnable myThread2 = () ->
+        Runnable AgentListenerTherad = () ->
         {
-            System.out.println("SERVER THREAD STARTED");
+            System.out.println("Thread listening for Agents ");
             try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(ManagerPort))) {
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
@@ -106,52 +70,21 @@ public class Manager {
                 }
 
             } catch (IOException e) {
-                System.err.println("500;Login Service ERROR. " + e.getMessage());
-                waitForUserInput();
+                System.err.println("500; Thread listening for Agenst occurs error, none more agents will be connected. " + e.getMessage());
+
             }
         };
 
         // Instantiating Thread class by passing Runnable
         // reference to Thread constructor
-        Thread run = new Thread(myThread2);
+        Thread run = new Thread(AgentListenerTherad);
 
-        // Starting the thread
+        // Starting the listner
         run.start();
 
-        System.out.println("REQUEST SENDER THREAD STARTED");
-        Thread.sleep(1000);
-
-        Boolean isApiGatwayRequestSended = false;
-        try {
-            if(!isApiGatwayRequestSended){
-                System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-                output2.println("type:execution_request;" +
-                        "message_id:0;" +
-                        "agent_network_address:none;" +
-                        "service_name:ApiGateway.jar;" +
-                        "service_instance_id:1;" +
-                        "socket_configuration:none;" +
-                        "plug_configuration:none");
-                isApiGatwayRequestSended = true;
-                output2.flush();
-            }
-        }catch(Exception e){
-
-            waitForUserInput();
-        }
 
 
 
-
-//            Thread.sleep(1000);
-
-    }
-    private static void waitForUserInput() {
-        System.out.println("Press Enter to exit...");
-        try (Scanner scanner = new Scanner(System.in)) {
-            scanner.nextLine();
-        }
     }
 
 
@@ -168,70 +101,117 @@ public class Manager {
             try (BufferedReader input = new BufferedReader(new InputStreamReader(agentSocket.getInputStream()));
                  PrintWriter output = new PrintWriter(agentSocket.getOutputStream(), true)
                  ) {
-                try {
+                    try {
+                          while(true) {
+                              //        First connected agent will have request for open api gateway microservice
+//                              if(AgentsAmount == 0) {
+//                                  //            Open api gateway request
+//                                  System.out.println(" Im trying to send request to open apiGateway by first Agent:");
+//                                  output.println(new Requests("execution_request", "0", "apigateway",""));
+//                                  output.flush();
+//                              }
+
+                              //        Request reading
+                              String request = input.readLine();
+                              if (request != null) {
+                                  System.out.println("Request: "+ request);
+//                                  Checking if its only response
+                                  boolean IsItStatus = request.split(";")[2].split(":")[0].compareTo("Status") == 0;
+
+                                  if(IsItStatus){
+                                      Responses response = new Responses(request);
+                                      if(response.Status.equals("200")){
+//                                          Socket currentSocket=Agents.get(Integer.parseInt(response.Agent_type));
+                                          Socket currentSocket=Agents.findSocketByAgentType(Integer.parseInt(response.Agent_type));
+                                          PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                          currentOutput.println(response);
+                                          currentOutput.flush();
+                                          continue;
+                                      } else {
+                                          Socket currentSocket=null;
+                                          currentSocket = agents.getSocketWithSpecificMicroservice(response.Service_name);
+
+                                          try{
+                                              if(currentSocket==null){
+                                                  throw new Exception("Wrong service name!!!");
+                                              }}
+                                          catch (Exception ignore){
+                                          }
+                                          PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                          Requests new_request = new Requests(response);
+                                          new_request.Type = "execution_request";
+    //                                      new_request.Line = String.valueOf(newPort()); // porty mają być definiowane po stronie microservicu
+                                          currentOutput.println(new_request);
+                                          currentOutput.flush();
+                                          new_request.Type = "microserviceadress_request";
+                                          new_request.Line = "";
+                                          request = new_request.toString();
+                                      }
+                                  }
+//                              Checking if its request
+
+                                  Requests true_request = new Requests(request);
+//                                 INITIATION REQUEST
+                                  if(true_request.Type.equals("initiation_request")){
+                                      System.out.println("AGENT HAS BEEN CONECTED TO MANAGER");
+//                                      agent need to send - ip, port, type of agent, list of using microservices,
+                                      String ip = true_request.getIpFromInitialRequest();
+                                      String port = true_request.getPortFromInitialRequest();
+                                      String typeOfAgent = true_request.Message_id;
+                                      ArrayList<String> listOfMicroservices = true_request.getListOfMicroservices();
+                                      Agent newAgent = new Agent(ip,port,typeOfAgent,listOfMicroservices, this.agentSocket);
+
+                                      agents.addAgent(newAgent);
+
+                                    output.println(new Responses(true_request,"200"));
+                                    output.flush();
+                                  }
+//                                  MICROSERVICE ADRESS REQUEST
+                                  else if(true_request.Type.equals("microserviceadress_request")){
+//                                      REQUEST FORWARDING
+                                      Socket currentSocket=null;
+                                      try {
+//                                          Finding for agent which is responsible for microservice
+                                          int AgentNumber = 0;
 
 
-                      while(true) {
-                          String request = input.readLine();
-                          if (request != null) {
-                              System.out.println("Request: "+ request);
-                              String[] userData = request.split(";");
-                              String[] requestType = userData[0].split(":");
-                              System.out.println("requestType: "+ requestType[1]);
-                              if(requestType[1].equals("initiation_request")){
-                                  System.out.println("initiation_request has beed detected");
-                                  String[] message_id = userData[1].split(":");
-                                  if(message_id[1].equals("0")){
-                                  System.out.println("AGENT 0 HAS BEEN CONECTED TO MANAGER");
-                                      Agent0 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("1")){
-                                  System.out.println("AGENT 1 HAS BEEN CONECTED TO MANAGER");
-                                      Agent1 = this.agentSocket;
-                                  }
-                                  if(message_id[1].equals("2")){
-                                  System.out.println("AGENT 2 HAS BEEN CONECTED TO MANAGER");
-                                      Agent2 = this.agentSocket;
-                                  }
+                                            if(currentSocket==null){
+                                                throw new Exception("Wrong service name");
+                                            }
 
+                                            PrintWriter currentOutput = new PrintWriter(currentSocket.getOutputStream(), true);
+                                            currentOutput.println(request);
+                                            currentOutput.flush();
+//                                            Cannot find specific microservice error
+                                      }catch(Exception e){
+                                          System.out.println("Cannot find specific microservice error");
+                                          System.out.println(e.getMessage());
+                                      }
+                                  }
                               }
-                              if(requestType[1].equals("microserviceadress_request")){
-                                  System.out.println("microserviceadress_request detected ");
-                                  try {
-//                                          System.out.println("Agent0 Im trying to send request to open apiGateway:");
-                                          PrintWriter output2 = new PrintWriter(Agent0.getOutputStream(), true);
-                                          output2.println("Type:microserviceadress_request;Message_id:9013");
-                                          output2.flush();
-
-                                  }catch(Exception e){
-
-
-                                  }
-                              }
-
                           }
-                      }
-                }catch (SocketException s){
-                    s.printStackTrace();
-                }
+//                           Getting error while while(true) loop
+                     }catch (SocketException s){
 
+                        s.printStackTrace();
+                    }
+//                          Getting reader/writer try catch
             }catch(IOException e){
+                System.out.println("Getting error while opening reader/writer");
             e.printStackTrace();
             }
          finally
         {
-            try {
-                agentSocket.close();
-            } catch (IOException e) {
-                System.err.println("Błąd socketa");
+                try {
+                    agentSocket.close();
+                } catch (IOException e) {
+                    System.err.println("Błąd socketa");
+                }
             }
         }
-    }
-
-
         }
-
     }
+
 
 
 

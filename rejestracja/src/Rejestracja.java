@@ -20,16 +20,20 @@ public class Rejestracja implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String request = input.readLine();
-            String[] userData = request.split(";");
+            String request_string = input.readLine();
+            Requests request = new Requests(request_string);
+            Responses response = new Responses(request,"200");
 
-            if (userData.length != 3) {
-                output.println("406;Zła data rejestracji.");
+            if (request.Line.split(";").length != 2) {
+                response.Line = "Nieprawidłowe dane uwierzytelniające.";
+                response.Status = "406";
+                output.println(response);
+                SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
                 return;
             }
 
-            String username = userData[1];
-            String password = userData[2];
+            String username = request.Line.split(";")[0];
+            String password = request.Line.split(";")[1];
 
             try (Connection connection = PolaczenieBaza.getConnection()) {
                 PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
@@ -37,8 +41,11 @@ public class Rejestracja implements Runnable {
                 ResultSet resultSet = checkUserStatement.executeQuery();
 
                 if (resultSet.next()) {
-                    output.println("409;Użytkownik istnieje w bazie danych.");
+                    response.Line = "Użytkownik istnieje w bazie danych.";
+                    response.Status = "409";
+                    output.println(response);
                     output.flush();
+                    SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
                     return;
                 }
 
@@ -47,8 +54,10 @@ public class Rejestracja implements Runnable {
                 insertUserStatement.setString(2, password);
                 insertUserStatement.executeUpdate();
 
-                output.println("200;Pomyślnie zarejestrowano. Gratuluję.");
+                response.Line = "Pomyślnie zarejestrowano. Gratuluję.";
+                output.println(response);
                 output.flush();
+                SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
             } catch (SQLException e) {
                 System.err.println("Błąd");
             }
