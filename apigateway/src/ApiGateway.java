@@ -8,12 +8,13 @@ import java.util.Scanner;
 public class ApiGateway {
 
 
-    protected static String AgentIp,AgentPort,APIIp,APIPort;
+
 
     public static void main(String[] args) {
 
-        AgentIp = args[0];
-        AgentPort = args[1];
+        String AgentIp = args[0];
+        String AgentPort = args[1];
+
 
         System.out.println("ApiGateway");
 
@@ -24,7 +25,11 @@ public class ApiGateway {
             System.err.println("Plik konfiguracyjny nie załadował się.");
             waitForUserInput();
         }
-        try (Socket socket = new Socket(AgentIp, Integer.parseInt(AgentPort))) {
+        try (Socket socket = new Socket("localhost", 9010);
+        PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            outputAgent.write("Message from api ");
+            outputAgent.flush();
             System.out.println("połączono");
             socket.close();
             Thread.sleep(3000);
@@ -36,11 +41,11 @@ public class ApiGateway {
 
 
         int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port")); //NOT TO CHANGE
-//        int gatewayPort = Integer.parseInt(ApiPort);
+
         try (ServerSocket serverSocket = new ServerSocket(gatewayPort)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                new Thread(() -> processRequest(clientSocket,AgentIp,AgentPort)).start();
+                new Thread(() -> processRequest(clientSocket, properties,AgentIp,AgentPort)).start();
             }
         } catch (IOException e) {
             System.out.println(gatewayPort);
@@ -51,66 +56,141 @@ public class ApiGateway {
 
     }
 
-    private static void processRequest(Socket clientSocket,String ip, String port) {
+    private static void processRequest(Socket clientSocket, Properties properties,String ip, String port) {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
             String request = input.readLine();
             System.out.println("[REQUEST FROM CLI]: " + request); //[REQUEST FROM CLI]: Type:logowanie;Message_id:1444838425;Line:daw;daw
-            Requests new_request = new Requests(request);
+            String[] requestParts = request.split(";" );
+            String requestType = requestParts[0].split(":")[1];
+            System.out.println(requestType);
 
-            String targetServicePort="";
-            String targetServiceIP="";
+            String targetServicePort;
+            String targetServiceIP;
 
-            Requests requestToAgent = new Requests("microserviceadress_request",new_request.Message_id,new_request.Service_name,new_request.Agent_type,"");
+
+            String  requestToAgent = "type:microserviceadress_request;" +
+            "Message_id:" + requestType;
             System.out.println("[Request For Microservice Adress]: " + requestToAgent);
 
-            try (Socket socket = new Socket(AgentIp, Integer.parseInt(AgentPort));
+            try (Socket socket = new Socket("localhost", 9010);
                  PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader inputAgent = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 outputAgent.println(requestToAgent);
                 System.out.println("[WYSLANO REQUEST DO AGENTA]");
                 outputAgent.flush();
-                String response=inputAgent.readLine();
-                System.out.println("Response: "+response);
-                Responses new_response = new Responses(response);
-                targetServiceIP=new_response.Line.split(";")[0];
-                targetServicePort=new_response.Line.split(";")[1];
+                String outputFromAgent = null;
+                while (true){
+                    if(inputAgent.readLine()!=null)
+                    {
+                      outputFromAgent  = inputAgent.readLine();
+                        break;
+                    }
+
+                }
+                try (Socket MicroserviceSocket = new Socket("localhost", Integer.parseInt(outputFromAgent));
+                     PrintWriter outputMicroservice = new PrintWriter(MicroserviceSocket.getOutputStream(), true);
+                     BufferedReader inputMicroservice = new BufferedReader(new InputStreamReader(MicroserviceSocket.getInputStream()))) {
+                    outputMicroservice.println(request);
+                    String responseMicroservice = null;
+
+                    while (responseMicroservice == null){
+                        responseMicroservice = inputMicroservice.readLine();
+                    }
+                    output.println(responseMicroservice);
+
+                }
+
+
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 waitForUserInput();
             }
-
-
-            int targetPort = Integer.parseInt(targetServicePort);
-            try {
-                Thread.sleep(2000);
-            } catch (Exception ignore){
-
-            }
-
-                try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
-                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
-                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
-
-                    targetOutput.println(new_request);
-
-                    String response = targetInput.readLine();
-                    output.print(response);
-                    output.flush();
-                } catch (IOException e) {
-                    System.err.println("Błędne przekazanie plików ");
-                }
-
+//
+//            switch (requestType) {
+//                case "rejestracja" -> {
+//                    targetServicePort = properties.getProperty("registration.service.port");
+//                    targetServiceIP = properties.getProperty("registration.service.ip");
+//                }
+//                case "logowanie" -> {
+//                    System.out.println("[LOGIN REQUEST]");
+//                    targetServicePort = properties.getProperty("login.service.port");
+//                    targetServiceIP = properties.getProperty("login.service.ip");
+//                }
+//                case "post", "czytaj-posts" -> {
+//                    targetServicePort = properties.getProperty("post.service.port");
+//                    targetServiceIP = properties.getProperty("post.service.ip");
+//                }
+//                case "wgraj_plik", "pobierz_plik" -> {
+//                    targetServicePort = properties.getProperty("file.service.port");
+//                    targetServiceIP = properties.getProperty("file.service.ip");
+//                }
+//                default -> {
+//                    System.out.println("Błąd. Nieznany typ zapytania.");
+//                    return;
+//                }
+//            }
+//
+//            int targetPort = Integer.parseInt(targetServicePort);
+//
+//            if (requestType.equals("wgraj_plik")) {
+//                try (Socket targetSocket = new Socket(targetServiceIP, targetPort);
+//                     PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
+//                     BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()))) {
+//                    String[] parts = request.split(" ");
+//                    String destinationFileName = parts[parts.length - 2];
+//                    String encodedFile = parts[parts.length - 1];
+//
+//                    targetOutput.println("wgraj_plik;" + destinationFileName + ";" + encodedFile);
+//
+//                    String response = targetInput.readLine();
+//                    output.print(response);
+//                    output.flush();
+//                } catch (IOException e) {
+//                    System.err.println("Błędne przekazanie plików ");
+//                }
+//            } else if (requestType.equals("pobierz_plik")) {
+//                try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
+//                    PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
+//                    BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
+//
+//                    targetOutput.println(request);
+//
+//                    String response = targetInput.readLine();
+//                    output.println(response);
+//                    output.flush();
+//                } catch (IOException e) {
+//                    System.err.println("Błędne żądanie przekierowania.");
+//                    waitForUserInput();
+//                }
+//            } else {
+//                try (Socket targetSocket = new Socket(targetServiceIP, targetPort)) {
+//                    PrintWriter targetOutput = new PrintWriter(targetSocket.getOutputStream(), true);
+//                    BufferedReader targetInput = new BufferedReader(new InputStreamReader(targetSocket.getInputStream()));
+//
+//                    targetOutput.println(request);
+//                    System.out.println("Otrzymano połączenie");
+//                    String response = targetInput.readLine();
+//                    output.print(response);
+//                    output.flush();
+//                } catch (IOException e) {
+//                    System.err.println("Błędne żądanie przekierowania.");
+//                    e.printStackTrace();
+//                    waitForUserInput();
+//                }
+//            }
+//        } catch (IOException e) {
+//            System.err.println("Błąd przetwarzania żądania");
+//        } finally {
+//            try {
+//                clientSocket.close();
+//            } catch (IOException e) {
+//                System.err.println("Wewnętrzny błąd serwera" + e.getMessage());
+//                waitForUserInput();
+//            }
         } catch (IOException e) {
-            System.err.println("Błąd przetwarzania żądania");
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                System.err.println("Wewnętrzny błąd serwera" + e.getMessage());
-                waitForUserInput();
-            }
+            throw new RuntimeException(e);
         }
     }
     private static void waitForUserInput() {
