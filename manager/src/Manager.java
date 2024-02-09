@@ -13,7 +13,7 @@ public class Manager {
     protected static Map<String, String> microservices = new HashMap<>();
     protected static Map<String, String> microservicesDetails = new HashMap<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         if (args.length < 2) {
             System.err.println("Usage: java Manager <managerIp> <managerPort>");
             System.exit(1);
@@ -28,6 +28,8 @@ public class Manager {
         Runnable agentListenerThread = () -> {
             try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(managerPort))) {
                 System.out.println("Waiting for agents to connect...");
+                int agentTypeCount = 0; // Zmienna licznika wystąpień agentType
+
                 while (true) {
                     Socket agentSocket = serverSocket.accept();
                     BufferedReader input = new BufferedReader(new InputStreamReader(agentSocket.getInputStream()));
@@ -41,12 +43,19 @@ public class Manager {
                         String agentIp = requestParts[2];
                         String agentPort = requestParts[3];
 
+                        // Sprawdź, czy agentType został już odczytany 3 razy
+                        if (++agentTypeCount >= 3) {
+                            sendInitializationRequest();
+                            break;
+                        }
+
                         // Store agent information
                         agentSockets.put(agentIp, agentPort);
 
                         System.out.println("Agent " + agentType + " connected. IP: " + agentIp + ", Port: " + agentPort);
                     }
                 }
+
             } catch (IOException e) {
                 System.err.println("Error occurred while listening for agents: " + e.getMessage());
             }
@@ -56,8 +65,8 @@ public class Manager {
         Thread agentListener = new Thread(agentListenerThread);
         agentListener.start();
 
+
         // Send initialization request to agent 0
-        sendInitializationRequest();
 
         // Thread processing requests from agents
         Runnable requestProcessingThread = () -> {
@@ -93,8 +102,15 @@ public class Manager {
     }
 
     private static void sendInitializationRequest() {
+        String agent0Ip;
+        if (!agentSockets.isEmpty()) {
+            agent0Ip = agentSockets.keySet().iterator().next(); // Get IP of the first agent
+        } else {
+            // Obsługa sytuacji, gdy mapa jest pusta
+            System.err.println("No agents connected. Unable to send initialization request.");
+            return; // lub wykonaj inne odpowiednie działania
+        }
         try {
-            String agent0Ip = agentSockets.keySet().iterator().next(); // Get IP of the first agent
             String agent0Port = agentSockets.get(agent0Ip);
             Socket agent0Socket = new Socket(agent0Ip, Integer.parseInt(agent0Port));
             PrintWriter output = new PrintWriter(agent0Socket.getOutputStream(), true);
@@ -105,6 +121,7 @@ public class Manager {
             System.err.println("Error occurred while sending initialization request to agent 0: " + e.getMessage());
         }
     }
+
 
     private static void processRequest(String agentIp, String request) {
         try {

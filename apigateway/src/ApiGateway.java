@@ -23,7 +23,7 @@ public class ApiGateway {
             System.err.println("Plik konfiguracyjny nie załadował się.");
         }
 
-        int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port", "9010"));
+        int gatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port", "9000"));
 
         try (ServerSocket serverSocket = new ServerSocket(gatewayPort)) {
             while (true) {
