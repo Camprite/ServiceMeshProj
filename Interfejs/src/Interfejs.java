@@ -61,7 +61,7 @@ public class Interfejs {
                 case "REJESTRACJA" -> {
                     if (obecnyUser.equals("")) {
                         typ = "rejestracja";
-                        serviceName = typ;
+                        serviceName = "rejestracja";
                         System.out.print("Login: ");
                         login = scanner.nextLine();
                         System.out.print("Hasło: ");
