@@ -53,7 +53,7 @@ public class Agent0 {
                             String requestType = requestParts[0];
 
                             String[] requestPartsApi = request.split(";");
-                            String requestTypeApi = requestParts[0];
+                            String requestTypeApi = requestPartsApi[0];
 
                             if (requestType.equals("execution_request")) {
                                 System.out.println("[REQUEST FROM MANAGER]: " + request);
