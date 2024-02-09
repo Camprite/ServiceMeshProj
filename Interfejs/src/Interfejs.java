@@ -141,34 +141,38 @@ public class Interfejs {
                 }
             }
 
-            Requests request = new Requests(typ,message_id,serviceName,"0",dane);
+            String request = typ + ";" + dane;
             String response_String = sendRequestToApiGateway(request);
             if(!response_String.contains(";")){
                 System.out.println(response_String);
                 continue;
             }
-            Responses response = new Responses(response_String);
 
-            System.out.println("Status odpowiedzi: "+response.Status);
-            if (response.Status.equals("200")) {
-                if (response.Type.equals("logowanie") || response.Type.equals("rejestracja")) {
-                    obecnyUser = login;
-                } else if (response.Type.equals("wgraj_plik") | response.Type.equals("pobierz_plik")) {
-                    System.out.println("Przesyłanie pliku powiodło się.");
-                }
-            }
-            if (response.Status.equals("299")) {
-                String[] posts = response.Line.split(";");
-                for (String post : posts) {
-                    System.out.println(post);
-                }
-                continue;
-            }
-            System.out.println(response.Line);
+            String response = sendRequestToApiGateway(request);
+
+//            String[] responseParts = response.split(";", 2);
+//            String responseType = responseParts[0];
+//            String responseData = responseParts.length > 1 ? responseParts[1] : "";
+//
+//            if (responseType.equals("200")) {
+//                if (typ.equals("logowanie") || typ.equals("rejestracja")) {
+//                    obecnyUser = login;
+//                } else if (typ.equals("wgraj_plik") | typ.equals("pobierz_plik")) {
+//                    System.out.println("Przesyłanie pliku powiodło się.");
+//                }
+//            }
+//            if (responseType.equals("299")) {
+//                String[] posts = responseData.split("\t%\t");
+//                for (String post : posts) {
+//                    System.out.println(post);
+//                }
+//                continue;
+//            }
+            System.out.println(response);
         }
     }
 
-    private static String sendRequestToApiGateway(Requests request) {
+    private static String sendRequestToApiGateway(String request) {
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));
@@ -178,13 +182,13 @@ public class Interfejs {
         }
         int apiGatewayPort = Integer.parseInt(properties.getProperty("api.gateway.port"));
         String apiGatewayIP = properties.getProperty("api.gateway.ip");
-
-        if (request.Type.equals("wgraj_plik")) {
-            String sciezkaPliku = request.Line.split(";")[1];
+        String[] requestPart = request.split(";");
+        if (requestPart[0].equals("wgraj_plik")) {
+            String sciezkaPliku = requestPart[2];
             try {
                 byte[] fileBytes = Files.readAllBytes(Paths.get(sciezkaPliku));
                 String encodedFile = Base64.getEncoder().encodeToString(fileBytes);
-                request.Line = celnazwaPliku + ";" + encodedFile;
+                request = requestPart[0] + ";" + requestPart[1] + ";" + celnazwaPliku + ";" + encodedFile;
             } catch (IOException e) {
                 System.err.println("Błąd odczytu pliku." + e.getMessage());
                 return "Błąd odczytu pliku";
@@ -198,30 +202,29 @@ public class Interfejs {
                 System.err.println("Błąd połączenia z ApiGateway." + e.getMessage());
                 return "Błąd połączenia z ApiGateway.";
             }
-        } else if (request.Type.equals("pobierz_plik")) {
+        } else if (requestPart[0].equals("pobierz_plik")) {
             try (Socket socket = new Socket(apiGatewayIP, apiGatewayPort);
                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
                 output.println(request);
-                String response_string = input.readLine();
-                Responses response = new Responses(response_string);
+                String response = input.readLine();
+                String[] responseParts = response.split(";", 2);
 
-                if ("200".equals(response.Status)) {
-                    String encodedFile = response.Line.split(";")[0];
+                if ("200".equals(responseParts[0])) {
+                    String encodedFile = responseParts[1];
                     byte[] fileBytes = Base64.getDecoder().decode(encodedFile);
-                    String nazwaPliku = response.Line.split(";")[1];
+                    String nazwaPliku = requestPart[2];
                     String celPath = System.getProperty("user.home") + File.separator + "DOWNLOADED_" + nazwaPliku;
                     try {
                         Files.write(Paths.get(celPath), fileBytes);
-                        response.Line = "Pobranie pliku zakończone pomyślnie: " + celPath;
-                        return response.toString();
+                        return "200;Pobranie pliku zakończone pomyślnie: " + celPath;
                     } catch (IOException e) {
                         System.err.println("Błąd zapisu pliku" + e.getMessage());
                         return "Błąd zapisu pliku";
                     }
                 } else {
-                    return response.toString();
+                    return response;
                 }
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z ApiGateway." + e.getMessage());

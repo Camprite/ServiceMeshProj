@@ -20,21 +20,18 @@ public class Logowanie implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String request_string = input.readLine();
-            Requests request = new Requests(request_string);
-            Responses response = new Responses(request,"200");
+            String requestString = input.readLine(); // Odczytujemy żądanie od klienta
 
-            if (request.Line.split(";").length != 2) {
-                response.Line = "Nieprawidłowe dane uwierzytelniające.";
-                response.Status = "400";
-                output.println(response);
+            if (requestString.split(";").length != 2) {
+                String errorMessage = "Nieprawidłowe dane uwierzytelniające.";
+                output.println(errorMessage);
                 output.flush();
-                SerwisLogowania.toSend.add(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
+                SerwisLogowania.notifyAgent(); // Powiadom agenta o zakończeniu obsługi klienta
                 return;
             }
 
-            String username = request.Line.split(";")[0];
-            String password = request.Line.split(";")[1];
+            String username = requestString.split(";")[0];
+            String password = requestString.split(";")[1];
             try (Connection connection = PolaczenieBaza.getConnection()) {
                 PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
                 checkUserStatement.setString(1, username);
@@ -42,18 +39,18 @@ public class Logowanie implements Runnable {
 
                 if (resultSet.next()) {
                     if (resultSet.getString("password").equals(password)) {
-                        response.Line = "Zalogowano!";
+                        String successMessage = "Zalogowano!";
+                        output.println(successMessage);
                     } else {
-                        response.Status = "400";
-                        response.Line = "Błędne hasło.";
+                        String errorMessage = "Błędne hasło.";
+                        output.println(errorMessage);
                     }
-                    output.println(response);
                 } else {
-                    response.Status = "400";
-                    response.Line = "Użytkownik nie istnieje DB.";
-                    output.println(response);
+                    String errorMessage = "Użytkownik nie istnieje w bazie danych.";
+                    output.println(errorMessage);
                 }
-                SerwisLogowania.toSend.add(new Requests("not_busy","1","login","2", SerwisLogowania.portClient));
+                output.flush();
+                SerwisLogowania.notifyAgent(); // Powiadom agenta o zakończeniu obsługi klienta
             } catch (SQLException e) {
                 System.err.println("Błąd.");
                 e.printStackTrace();

@@ -5,13 +5,14 @@
       <module fileurl="file://$PROJECT_DIR$/Interfejs/Interfejs.iml" filepath="$PROJECT_DIR$/Interfejs/Interfejs.iml" />
       <module fileurl="file://$PROJECT_DIR$/ServiceMesh.iml" filepath="$PROJECT_DIR$/ServiceMesh.iml" />
       <module fileurl="file://$PROJECT_DIR$/agent/agent.iml" filepath="$PROJECT_DIR$/agent/agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent1/agent1.iml" filepath="$PROJECT_DIR$/agent1/agent1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent2/agent2.iml" filepath="$PROJECT_DIR$/agent2/agent2.iml" />
       <module fileurl="file://$PROJECT_DIR$/apigateway/apigateway.iml" filepath="$PROJECT_DIR$/apigateway/apigateway.iml" />
       <module fileurl="file://$PROJECT_DIR$/login/login.iml" filepath="$PROJECT_DIR$/login/login.iml" />
       <module fileurl="file://$PROJECT_DIR$/manager/manager.iml" filepath="$PROJECT_DIR$/manager/manager.iml" />
       <module fileurl="file://$PROJECT_DIR$/pliki/pliki.iml" filepath="$PROJECT_DIR$/pliki/pliki.iml" />
       <module fileurl="file://$PROJECT_DIR$/posty/posty.iml" filepath="$PROJECT_DIR$/posty/posty.iml" />
       <module fileurl="file://$PROJECT_DIR$/rejestracja/rejestracja.iml" filepath="$PROJECT_DIR$/rejestracja/rejestracja.iml" />
-      <module fileurl="file://$PROJECT_DIR$/testing/testing.iml" filepath="$PROJECT_DIR$/testing/testing.iml" />
     </modules>
   </component>
 </project>

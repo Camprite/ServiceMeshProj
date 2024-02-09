@@ -20,20 +20,16 @@ public class Rejestracja implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String request_string = input.readLine();
-            Requests request = new Requests(request_string);
-            Responses response = new Responses(request,"200");
+            String requestString = input.readLine();
+            String[] requestParts = requestString.split(";");
 
-            if (request.Line.split(";").length != 2) {
-                response.Line = "Nieprawidłowe dane uwierzytelniające.";
-                response.Status = "406";
-                output.println(response);
-                SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
+            if (requestParts.length != 2) {
+                output.println("Nieprawidłowe dane uwierzytelniające.");
                 return;
             }
 
-            String username = request.Line.split(";")[0];
-            String password = request.Line.split(";")[1];
+            String username = requestParts[0];
+            String password = requestParts[1];
 
             try (Connection connection = PolaczenieBaza.getConnection()) {
                 PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
@@ -41,11 +37,7 @@ public class Rejestracja implements Runnable {
                 ResultSet resultSet = checkUserStatement.executeQuery();
 
                 if (resultSet.next()) {
-                    response.Line = "Użytkownik istnieje w bazie danych.";
-                    response.Status = "409";
-                    output.println(response);
-                    output.flush();
-                    SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
+                    output.println("Użytkownik istnieje w bazie danych.");
                     return;
                 }
 
@@ -54,20 +46,19 @@ public class Rejestracja implements Runnable {
                 insertUserStatement.setString(2, password);
                 insertUserStatement.executeUpdate();
 
-                response.Line = "Pomyślnie zarejestrowano. Gratuluję.";
-                output.println(response);
-                output.flush();
-                SerwisRejestracji.toSend.add(new Requests("not_busy","1","rejestracja","2", SerwisRejestracji.portClient));
+                output.println("Pomyślnie zarejestrowano. Gratuluję.");
+                SerwisRejestracji.notifyAgent();
             } catch (SQLException e) {
-                System.err.println("Błąd");
+                System.err.println("Błąd " + e.getMessage());
+                output.println("Błąd przetwarzania żądania.");
             }
         } catch (IOException e) {
-            System.err.println("Błąd");
+            System.err.println("Błąd " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                System.err.println("Błąd" + e.getMessage());
+                System.err.println("Błąd " + e.getMessage());
             }
         }
     }

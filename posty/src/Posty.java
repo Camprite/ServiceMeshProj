@@ -20,86 +20,87 @@ public class Posty implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String request_string = input.readLine();
-            Requests request = new Requests(request_string);
-            Responses response = new Responses(request,"200");
+            String requestString = input.readLine();
+            String[] requestParts = requestString.split(";");
 
-            if (request.Type.equals("post")) {
-
-                try (Connection connection = PolaczenieBaza.getConnection()) {
-                    String username = "";
-                    String postData = "";
-                    try {
-                        username = request.Line.split(";")[0];
-                        postData=request.Line.split(";")[1];
-                    } catch (Exception e){
-                        response.Line = "Nie możesz wysłać pustego postu.";
-                        response.Status = "400";
-                        output.println(response);
-                        output.flush();
-                        SerwisPostow.toSend.add(new Requests("not_busy","1","posty","3", SerwisPostow.portClient));
-                        return;
-                    }
-                    PreparedStatement getUserIdStatement = connection.prepareStatement("SELECT id FROM users WHERE username = ?");
-                    getUserIdStatement.setString(1, username);
-                    ResultSet resultSet = getUserIdStatement.executeQuery();
-
-                    if (!resultSet.next()) {
-                        response.Line = "Użytkownik nie istnieje w DB.";
-                        response.Status = "400";
-                        output.println(response);
-                        output.flush();
-                        SerwisPostow.toSend.add(new Requests("not_busy","1","posty","3", SerwisPostow.portClient));
-                        return;
-                    }
-                    int userId = resultSet.getInt("id");
-
-                    PreparedStatement insertPostStatement = connection.prepareStatement("INSERT INTO posts (user, content) VALUES (?, ?)");
-                    insertPostStatement.setInt(1, userId);
-                    insertPostStatement.setString(2, postData);
-                    insertPostStatement.executeUpdate();
-                    response.Line = "Post Pomyślnie dodany.";
-                } catch (SQLException e) {
-                    System.err.println("Błąd");
-                }
-            } else if (request.Type.equals("czytaj-posts")) {
-                try (Connection connection = PolaczenieBaza.getConnection()) {
-                    PreparedStatement returnPostStatement = connection.prepareStatement("SELECT * FROM posts ORDER BY ID DESC LIMIT 10");
-                    ResultSet resultSet = returnPostStatement.executeQuery();
-
-                    StringBuilder posts = new StringBuilder();
-                    while (resultSet.next()) {
-                        String content = resultSet.getString("content");
-                        int userId = resultSet.getInt("user");
-                        String tstamp = resultSet.getString("tstamp");
-
-                        PreparedStatement getUsernameStatement = connection.prepareStatement("SELECT username FROM users WHERE id = ?");
-                        getUsernameStatement.setInt(1, userId);
-                        ResultSet userResultSet = getUsernameStatement.executeQuery();
-
-                        if (userResultSet.next()) {
-                            String uname = userResultSet.getString("username");
-                            posts.append("Uzytkownik ").append(uname).append("\s\sNapisał:\t").append(content).append("\t%\tDodano: ").append(tstamp).append(";");
-                        }
-                    }
-                    response.Line = posts.toString();
-                    response.Status = "299";
-
-                } catch (SQLException e) {
-                    System.err.println("Błąd");
-                }
+            if (requestParts.length < 2) {
+                output.println("Nieprawidłowe żądanie.");
+                return;
             }
-            output.println(response);
-            output.flush();
-            SerwisPostow.toSend.add(new Requests("not_busy","1","posty","3", SerwisPostow.portClient));
+
+            String requestType = requestParts[0];
+
+            if (requestType.equals("post")) {
+                handlePostRequest(requestParts, output);
+            } else if (requestType.equals("czytaj-posts")) {
+                handleReadPostsRequest(output);
+            } else {
+                output.println("Nieprawidłowe żądanie.");
+            }
         } catch (IOException e) {
-            System.err.println("Błąd");
+            System.err.println("Błąd przetwarzania żądania: " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                System.err.println("Błąd");
+                System.err.println("Błąd zamykania gniazda: " + e.getMessage());
             }
+        }
+    }
+
+    private void handlePostRequest(String[] requestParts, PrintWriter output) {
+        String username = requestParts[1];
+        String postData = requestParts[2];
+
+        try (Connection connection = PolaczenieBaza.getConnection()) {
+            PreparedStatement getUserIdStatement = connection.prepareStatement("SELECT id FROM users WHERE username = ?");
+            getUserIdStatement.setString(1, username);
+            ResultSet resultSet = getUserIdStatement.executeQuery();
+
+            if (!resultSet.next()) {
+                output.println("Użytkownik nie istnieje w bazie danych.");
+                return;
+            }
+
+            int userId = resultSet.getInt("id");
+
+            PreparedStatement insertPostStatement = connection.prepareStatement("INSERT INTO posts (user, content) VALUES (?, ?)");
+            insertPostStatement.setInt(1, userId);
+            insertPostStatement.setString(2, postData);
+            insertPostStatement.executeUpdate();
+            output.println("Post pomyślnie dodany.");
+            SerwisPostow.notifyAgent();
+        } catch (SQLException e) {
+            System.err.println("Błąd przetwarzania żądania: " + e.getMessage());
+            output.println("Błąd przetwarzania żądania.");
+        }
+    }
+
+    private void handleReadPostsRequest(PrintWriter output) {
+        try (Connection connection = PolaczenieBaza.getConnection()) {
+            PreparedStatement returnPostStatement = connection.prepareStatement("SELECT * FROM posts ORDER BY ID DESC LIMIT 10");
+            ResultSet resultSet = returnPostStatement.executeQuery();
+
+            StringBuilder posts = new StringBuilder();
+            while (resultSet.next()) {
+                String content = resultSet.getString("content");
+                int userId = resultSet.getInt("user");
+                String timestamp = resultSet.getString("tstamp");
+
+                PreparedStatement getUsernameStatement = connection.prepareStatement("SELECT username FROM users WHERE id = ?");
+                getUsernameStatement.setInt(1, userId);
+                ResultSet userResultSet = getUsernameStatement.executeQuery();
+
+                if (userResultSet.next()) {
+                    String username = userResultSet.getString("username");
+                    posts.append("Użytkownik ").append(username).append("\tNapisał: ").append(content).append("\tDodano: ").append(timestamp).append(";");
+                }
+            }
+            output.println(posts.toString());
+            SerwisPostow.notifyAgent();
+        } catch (SQLException e) {
+            System.err.println("Błąd przetwarzania żądania: " + e.getMessage());
+            output.println("Błąd przetwarzania żądania.");
         }
     }
 }
