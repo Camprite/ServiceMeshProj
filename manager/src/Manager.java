@@ -17,7 +17,6 @@ public class Manager {
 
     public static Socket[] Agents={null,null,null};
     public static String[][] AgentsServices={null,null,null};
-    public static Process[] AgentProcesses={null,null,null};
 
 //    static String RequestToCreateApiGatewayMicroservice =
 //            "Type:execution_request" +
@@ -30,7 +29,6 @@ public class Manager {
         System.out.println("[MANAGER]");
         String ManagerPort = "9100";
         String ManagerIP = "localhost";
-        String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream("config.properties"));
@@ -39,35 +37,6 @@ public class Manager {
             waitForUserInput();
         }
         String apiPort = properties.getProperty("api.gateway.port");
-
-
-//          AGENTS TYPES  0 = APIGATEWAY AGENT, 1 = LOGIN + REGISTER AGENT, 2 = POSTS AND FILES AGENT
-        ProcessBuilder pbAPIGatewayAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9010", "localhost", ManagerPort, ManagerIP, "0");
-        ProcessBuilder pbLoginRegisterAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9020", "localhost", ManagerPort, ManagerIP, "1");
-        ProcessBuilder pbPostsAgent = new ProcessBuilder( "cmd", "/c", "start", "java", "-jar",  AgentPath , "9030", "localhost", ManagerPort, ManagerIP, "2");
-
-//Opening Agent processes
-        try {
-            Process ProcAPIGatewayAgent = pbAPIGatewayAgent.start();
-            AgentProcesses[0] = ProcAPIGatewayAgent;
-            Process ProcLoginRegisterAgent = pbLoginRegisterAgent.start();
-            AgentProcesses[1] = ProcLoginRegisterAgent;
-            Process ProcPostsAgent = pbPostsAgent.start();
-            AgentProcesses[2] = ProcPostsAgent;
-            if(!ProcAPIGatewayAgent.isAlive() || !ProcLoginRegisterAgent.isAlive() || !ProcPostsAgent.isAlive()){
-                System.out.println();
-                System.out.println("isAlive APIGatewayAgent: " + ProcAPIGatewayAgent.isAlive());
-                System.out.println("isAlive LoginRegisterAgent: " + ProcLoginRegisterAgent.isAlive());
-                System.out.println("isAlive PostsAgent: " + ProcPostsAgent.isAlive());
-                System.out.println();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            waitForUserInput();
-        } catch (Exception e) {
-            e.printStackTrace();
-            waitForUserInput();
-        }
 
 
 
