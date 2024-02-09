@@ -44,7 +44,7 @@ public class Manager {
 
 
         String ManagerPort = args[0];
-        String ManagerIP = args[1];
+//        String ManagerIP = args[1];
 //        String AgentPath = System.getProperty("user.dir") + "\\agent.jar";
 
 

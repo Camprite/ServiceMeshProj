@@ -40,7 +40,10 @@ public class Agent {
         managerPort = args[1];
         agentType = args[2];
         System.out.println("[AGENT PROCESS]");
-
+        System.out.println("-----");
+        System.out.println(managerIp);
+        System.out.println(managerPort);
+        System.out.println(agentType);
 //        Define agent responsible;
         if(agentType == "0") {
             AgentResponsible.add("api"); //Adding responsible to Agent with 0 index
@@ -148,12 +151,7 @@ public class Agent {
             };//THREAD END
 
 
-                // Instantiating Thread class by passing Runnable
-                // reference to Thread constructor
-                Thread run = new Thread(myThread);
 
-                // Starting the thread
-                run.start();
 
 
 
@@ -166,8 +164,16 @@ public class Agent {
 
             try (ServerSocket serverSocket = new ServerSocket(0)) {
 
+
                 System.out.println("Agent server started on port: " + serverSocket.getLocalPort());
                 agentPort = Integer.toString(serverSocket.getLocalPort());
+
+                // Instantiating Thread class by passing Runnable
+                // reference to Thread constructor
+                Thread run = new Thread(myThread);
+
+                // Starting the thread
+                run.start();
 
                 while (true) {
 //                    CONNECTION SEGMENT
