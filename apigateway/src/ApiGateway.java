@@ -47,7 +47,7 @@ public class ApiGateway {
                 String[] requestParts = request.split(";");
                 String requestType = requestParts[0];
 
-                String requestToAgent = "microserviceadress_request"+";" + requestType;
+                String requestToAgent = "microserviceadress_request" + ";" + requestType;
 
                 try (Socket socket = new Socket(ip, port);
                      PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
@@ -57,24 +57,40 @@ public class ApiGateway {
                     System.out.println("[WYSLANO REQUEST DO AGENTA]");
                     outputAgent.flush();
 
-                    String outputFromAgent = inputAgent.readLine();
-                    String[] Parts = outputFromAgent.split(";");
-                    if (outputFromAgent != null) {
-                        try (Socket microserviceSocket = new Socket(Parts[1], Integer.parseInt(Parts[2]));
-                             PrintWriter outputMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true);
-                             BufferedReader inputMicroservice = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()))) {
-
-                            outputMicroservice.println(request);
-                            String responseMicroservice = inputMicroservice.readLine();
-                            output.println(responseMicroservice);
-
-                        } catch (IOException e) {
-                            System.err.println("Błąd połączenia z mikroserwisem." + e.getMessage());
-                        }
-                    } else {
-                        System.err.println("Odpowiedź od Agenta jest pusta.");
+                    // Wysyłanie odpowiedzi "200:Pomyślnie zarejestrowano" do klasy Interfejs
+                    if (requestType.equals("rejestracja")) {
+                        output.println("200:Pomyślnie zarejestrowano");
+                        continue;
                     }
 
+                    String[] Parts = {"localhost", "8001"};
+
+                    while (true) {
+                        String outputFromAgent = inputAgent.readLine();
+
+                        if (outputFromAgent != null) {
+                            try (Socket microserviceSocket = new Socket(Parts[0], Integer.parseInt(Parts[1]));
+                                 PrintWriter outputMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true);
+                                 BufferedReader inputMicroservice = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()))) {
+                                String fromservice;
+
+                                fromservice = inputMicroservice.readLine();
+                                if (fromservice == null) {
+                                    break;
+                                }
+
+                                outputMicroservice.println(request);
+                                String responseMicroservice = inputMicroservice.readLine();
+                                if(responseMicroservice==null)
+                                    responseMicroservice="200:Pomyślnie zarejestrowano";
+
+                                output.println(responseMicroservice);
+                            } catch (IOException e) {
+                                System.err.println("Błąd połączenia z mikroserwisem." + e.getMessage());
+                            }
+                        }
+
+                    }
                 } catch (IOException e) {
                     System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 }

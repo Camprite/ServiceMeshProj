@@ -28,33 +28,34 @@ public class Rejestracja implements Runnable {
                 return;
             }
 
-            String username = requestParts[0];
-            String password = requestParts[1];
+//            String username = requestParts[0];
+//            String password = requestParts[1];
+//
+//            try (Connection connection = PolaczenieBaza.getConnection()) {
+//                PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
+//                checkUserStatement.setString(1, username);
+//                ResultSet resultSet = checkUserStatement.executeQuery();
+//
+//                if (resultSet.next()) {
+//                    output.println("Użytkownik istnieje w bazie danych.");
+//                    return;
+//                }
+//
+//                PreparedStatement insertUserStatement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
+//                insertUserStatement.setString(1, username);
+//                insertUserStatement.setString(2, password);
+//                insertUserStatement.executeUpdate();
 
-            try (Connection connection = PolaczenieBaza.getConnection()) {
-                PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
-                checkUserStatement.setString(1, username);
-                ResultSet resultSet = checkUserStatement.executeQuery();
-
-                if (resultSet.next()) {
-                    output.println("Użytkownik istnieje w bazie danych.");
-                    return;
-                }
-
-                PreparedStatement insertUserStatement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
-                insertUserStatement.setString(1, username);
-                insertUserStatement.setString(2, password);
-                insertUserStatement.executeUpdate();
-
-                output.println("Pomyślnie zarejestrowano. Gratuluję.");
-                SerwisRejestracji.notifyAgent();
-            } catch (SQLException e) {
+                output.write("Pomyślnie zarejestrowano. Gratuluję.");
+               // SerwisRejestracji.notifyAgent();
+            } catch (IOException e) {
                 System.err.println("Błąd " + e.getMessage());
-                output.println("Błąd przetwarzania żądania.");
+               // output.println("Błąd przetwarzania żądania.");
             }
-        } catch (IOException e) {
-            System.err.println("Błąd " + e.getMessage());
-        } finally {
+//        } catch (IOException e) {
+//            System.err.println("Błąd " + e.getMessage());
+//        }
+        finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {

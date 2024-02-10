@@ -234,11 +234,16 @@ public class Interfejs {
             try (Socket socket = new Socket(apiGatewayIP, apiGatewayPort);
                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
                 output.println(request);
-                return input.readLine();
+                String response = input.readLine();
+
+                // Obsługa odpowiedzi i przekazanie ich do interfejsu
+                return response;
+
             } catch (IOException e) {
                 System.err.println("Błąd połączenia z ApiGateway." + e.getMessage());
-                return "503;Błąd połączenia z ApiGateway.";
+                return "Błąd połączenia z ApiGateway.";
             }
         }
     }

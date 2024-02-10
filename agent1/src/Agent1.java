@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Properties;
@@ -10,13 +11,14 @@ public class Agent1 {
     protected static String agentPort;
     protected static String managerIp;
     protected static String managerPort;
-    protected static Process process; // Dodajemy pole przechowujące proces
+    protected static Process process;
 
     public static void main(String[] args) {
 
         managerIp = args[0];
         managerPort = args[1];
         agentType = args[2];
+
         System.out.println("[AGENT1 PROCESS]");
         System.out.println("-----");
         System.out.println(managerIp);
@@ -29,24 +31,27 @@ public class Agent1 {
         } catch (IOException e) {
             System.err.println("Plik konfiguracyjny nie załadował się.");
         }
-        agentPort = properties.getProperty("agent1.service.port"); //NOT TO CHANGE
+        agentPort = properties.getProperty("agent1.service.port");
         agentIp = properties.getProperty("agent1.service.ip");
+
         Thread myThread = new Thread(() -> {
             try {
                 try (Socket socket = new Socket(managerIp, Integer.parseInt(managerPort));
                      PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                      BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-                    // Register to Manager request
                     output.println("initiation_request" + ';' + agentType + ';' + agentIp + ';' + agentPort);
                     System.out.println("Initiation request has been sent to Manager");
                     System.out.print("Response: ");
                     System.out.println(input.readLine());
 
-
                     while (true) {
                         String request;
-                        if ((request = input.readLine()) != null) {
+                        ServerSocket serviceSocket = new ServerSocket(Integer.parseInt(agentPort));
+                        Socket clientSocket = serviceSocket.accept();
+                        PrintWriter serviceOutput = new PrintWriter(clientSocket.getOutputStream(), true);
+                        BufferedReader serviceInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                        if ((request = serviceInput.readLine()) != null) {
                             String[] requestParts = request.split(";");
 
                             String requestType = requestParts[0];
@@ -54,34 +59,24 @@ public class Agent1 {
                             if (requestType.equals("execution_request")) {
                                 System.out.println("[REQUEST FROM MANAGER]: " + request);
                                 System.out.println("[REQUEST]: execution request has been detected");
-                                String Name=requestParts[1];
+                                String name = requestParts[1];
                                 String serviceIp = requestParts[2];
                                 String servicePort = requestParts[3];
 
                                 try {
-                                    String servicePath = System.getProperty("user.dir") + "\\" + Name + ".jar";
+                                    String servicePath = System.getProperty("user.dir") + "\\" + name + ".jar";
                                     ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIp, agentPort, servicePort, "localhost", "9000");
-                                    process = processBuilder.start(); // Zapisujemy referencję do procesu
+                                    process = processBuilder.start();
 
-                                    // Tworzymy nowy wątek do obsługi komunikacji z mikroserwisem
-                                    Thread serviceThread = new Thread(() -> {
-                                        try (Socket serviceSocket = new Socket(serviceIp, Integer.parseInt(servicePort));
-                                             PrintWriter serviceOutput = new PrintWriter(serviceSocket.getOutputStream(), true);
-                                             BufferedReader serviceInput = new BufferedReader(new InputStreamReader(serviceSocket.getInputStream()))) {
 
-                                            while (true) {
 
-                                                String serviceRequest = serviceInput.readLine();
-                                                if (serviceRequest != null) {
-                                                    output.println(serviceRequest);
-                                                    break;
-                                                }
-                                            }
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                                    serviceThread.start(); // Uruchamiamy wątek obsługi mikroserwisu
+                                 //   String messageFromService = serviceInput.readLine();
+                                  //  System.out.println("Message from Service: " + messageFromService);
+
+                                    // Zamknięcie połączenia
+                                    serviceOutput.close();
+                                    serviceInput.close();
+                                    serviceSocket.close();
 
                                 } catch (Exception e) {
                                     System.out.println("[AGENT FAILED] Processbuilder failed");
@@ -91,8 +86,8 @@ public class Agent1 {
                                 System.out.println("[REQUEST FROM MANAGER]: " + request);
                                 System.out.println("[REQUEST]: close_microservice request has been detected");
                                 if (process != null) {
-                                    process.destroy(); // Zamykamy proces, jeśli istnieje
-                                    process = null; // Czyścimy referencję
+                                    process.destroy();
+                                    process = null;
                                 }
                             }
                         }
@@ -104,7 +99,7 @@ public class Agent1 {
                     throw new RuntimeException(e);
                 }
             } finally {
-
+                // Dodatkowe czynności do wykonania po zakończeniu wątku
             }
 
         });
