@@ -28,33 +28,32 @@ public class Rejestracja implements Runnable {
                 return;
             }
 
-//            String username = requestParts[0];
-//            String password = requestParts[1];
-//
-//            try (Connection connection = PolaczenieBaza.getConnection()) {
-//                PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
-//                checkUserStatement.setString(1, username);
-//                ResultSet resultSet = checkUserStatement.executeQuery();
-//
-//                if (resultSet.next()) {
-//                    output.println("Użytkownik istnieje w bazie danych.");
-//                    return;
-//                }
-//
-//                PreparedStatement insertUserStatement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
-//                insertUserStatement.setString(1, username);
-//                insertUserStatement.setString(2, password);
-//                insertUserStatement.executeUpdate();
+            String username = requestParts[0];
+            String password = requestParts[1];
 
-                output.write("Pomyślnie zarejestrowano. Gratuluję.");
-               // SerwisRejestracji.notifyAgent();
-            } catch (IOException e) {
-                System.err.println("Błąd " + e.getMessage());
-               // output.println("Błąd przetwarzania żądania.");
+            try (Connection connection = PolaczenieBaza.getConnection()) {
+                PreparedStatement checkUserStatement = connection.prepareStatement("SELECT * FROM users WHERE username = ?");
+                checkUserStatement.setString(1, username);
+                ResultSet resultSet = checkUserStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    output.println("Użytkownik istnieje w bazie danych.");
+                    return;
+                }
+
+                PreparedStatement insertUserStatement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)");
+                insertUserStatement.setString(1, username);
+                insertUserStatement.setString(2, password);
+                insertUserStatement.executeUpdate();
+
+            output.write("Pomyślnie zarejestrowano. Gratuluję.");
+             SerwisRejestracji.notifyAgent();
+        } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-//        } catch (IOException e) {
-//            System.err.println("Błąd " + e.getMessage());
-//        }
+        } catch (IOException e) {
+            System.err.println("Błąd " + e.getMessage());
+        }
         finally {
             try {
                 clientSocket.close();

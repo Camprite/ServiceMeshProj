@@ -90,7 +90,7 @@ public class Manager {
                     String[] parts = request.split(";");
                     String agentPort = parts[2];
                     processRequest(agentPort, request, serverSocket, output);
-                    break; //Zabezpieczenie poki nie ma id wiadomosci
+                    //Zabezpieczenie poki nie ma id wiadomosci
                 }
             }
         } catch (IOException e) {
@@ -132,21 +132,21 @@ public class Manager {
                         microservicesDetails.put(ipPort, serviceName);
                     }
 
-                    //String[] ipPortArray = ipPort.split(":");
-                    //String ip = ipPortArray[0];
-                    //int port = Integer.parseInt(ipPortArray[1]);
+                    String[] ipPortArray = ipPort.split(":");
+                    String ip = ipPortArray[0];
+                    int port = Integer.parseInt(ipPortArray[1]);
 
                     String agent0Ip = agentSockets.keySet().iterator().next();
                     String agent0Port = agentSockets.get(agent0Ip);
                     Socket agent0Socket = new Socket(agent0Ip, Integer.parseInt(agent0Port));
                      output = new PrintWriter(agent0Socket.getOutputStream(), true);
-                    //output.println("microserviceadress_request;" + ip + ";" + port);
+                   output.println("microserviceadress_request;" + ip + ";" + port);
                     output.flush();
 
                     String agentIp = agentSockets.get(agentPort);
                     Socket agentSocket = new Socket(agentIp, Integer.parseInt(agentPort));
                     PrintWriter out = new PrintWriter(agentSocket.getOutputStream(), true);
-                   // out.println("execution_request;" + serviceName + ";" + ip + ";" + port);
+                    out.println("execution_request;" + serviceName + ";" + ip + ";" + port);
                     out.flush();
 
                     microservices.put(serviceName, "busy");
@@ -182,14 +182,9 @@ public class Manager {
                          agentPorts = agentSockets.get(agentIp);
                     } else {
                         // W przeciwnym razie wybierz IP i port trzeciego agenta
-                      //  agentIp = agentSockets.keySet().stream().skip(2).findFirst().orElse("localhost");
-                     //    agentPorts = agentSockets.get(agentIp);
+                       agentIp = agentSockets.keySet().stream().skip(2).findFirst().orElse("localhost");
+                         agentPorts = agentSockets.get(agentIp);
                     }
-                    Socket agentSocket = new Socket("localhost", 9011);
-                    PrintWriter out = new PrintWriter(agentSocket.getOutputStream(), true);
-                    out.println("execution_request;" + "rejestracja" + ";" + "localhost" + ";" + ipPort); //na razie sztywno
-                    output.flush();
-
                     microservices.put(requestParts[1], "busy");
                 }
             }
@@ -207,7 +202,7 @@ public class Manager {
                         microservices.remove(serviceName);
                         System.out.println("Closed microservice: " + serviceName);
                         String agentIp;
-                        if (serviceName.equals("login") || serviceName.equals("registration")) {
+                        if (serviceName.equals("SerwisLogowania") || serviceName.equals("SerwisRejestracji")) {
                             agentIp = agentSockets.keySet().stream().skip(1).findFirst().orElse("localhost");
                         } else {
                             agentIp = agentSockets.keySet().stream().skip(2).findFirst().orElse("localhost");

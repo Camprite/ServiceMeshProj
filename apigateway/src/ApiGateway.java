@@ -3,8 +3,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 
-public class ApiGateway {
 
+public class ApiGateway {
+    protected static String[] Parts = {"localhost", "8001"};
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage: java ApiGateway <AgentIp> <AgentPort>");
@@ -39,7 +40,6 @@ public class ApiGateway {
     private static void processRequest(Socket clientSocket, Properties properties, String ip, int port) {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
             String request;
             while ((request = input.readLine()) != null) {
                 System.out.println("[REQUEST FROM CLI]: " + request);
@@ -57,13 +57,6 @@ public class ApiGateway {
                     System.out.println("[WYSLANO REQUEST DO AGENTA]");
                     outputAgent.flush();
 
-                    // Wysyłanie odpowiedzi "200:Pomyślnie zarejestrowano" do klasy Interfejs
-                    if (requestType.equals("rejestracja")) {
-                        output.println("200:Pomyślnie zarejestrowano");
-                        continue;
-                    }
-
-                    String[] Parts = {"localhost", "8001"};
 
                     while (true) {
                         String outputFromAgent = inputAgent.readLine();
@@ -75,14 +68,9 @@ public class ApiGateway {
                                 String fromservice;
 
                                 fromservice = inputMicroservice.readLine();
-                                if (fromservice == null) {
-                                    break;
-                                }
 
                                 outputMicroservice.println(request);
                                 String responseMicroservice = inputMicroservice.readLine();
-                                if(responseMicroservice==null)
-                                    responseMicroservice="200:Pomyślnie zarejestrowano";
 
                                 output.println(responseMicroservice);
                             } catch (IOException e) {

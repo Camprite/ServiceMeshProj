@@ -74,9 +74,9 @@ public class Agent1 {
                                   //  System.out.println("Message from Service: " + messageFromService);
 
                                     // Zamknięcie połączenia
-                                    serviceOutput.close();
-                                    serviceInput.close();
-                                    serviceSocket.close();
+                                 //   serviceOutput.close();
+                                  //  serviceInput.close();
+                                //    serviceSocket.close();
 
                                 } catch (Exception e) {
                                     System.out.println("[AGENT FAILED] Processbuilder failed");
