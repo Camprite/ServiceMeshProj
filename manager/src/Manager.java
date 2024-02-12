@@ -62,7 +62,6 @@ public class Manager {
                     System.out.println("Agent " + agentType + " connected. IP: " + agentIp + ", Port: " + agentPort);
                     // Check if all agent types have been received, then break the loop
                     if (agentType0Received && agentType1Received && agentType2Received) {
-                        //sendInitializationRequest();
                         break;
                     }
 
@@ -89,9 +88,14 @@ public class Manager {
                 if (request != null) {
                     String[] parts = request.split(";");
                     String agentPort = parts[2];
-                    processRequest(agentPort, request, serverSocket, output);
-                    //Zabezpieczenie poki nie ma id wiadomosci
+                    String serwis = parts[1];
+                    if(serwis.equals("rejestracja") || serwis.equals("logowanie") || serwis.equals("post") || serwis.equals("czytaj-posts") || serwis.equals("wgraj_plik") || serwis.equals("pobierz_plik")){
+
+                        processRequest(agentPort, request, serverSocket, output);
+                        //Zabezpieczenie poki nie ma id wiadomosci
+                    }
                 }
+              //  checkMicroservicesStatus();
             }
         } catch (IOException e) {
             throw new RuntimeException("Error occurred while listening for requests from agents: " + e.getMessage());

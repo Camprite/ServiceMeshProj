@@ -142,32 +142,32 @@ public class Interfejs {
             }
 
             String request = typ + ";" + dane;
-            String response_String = sendRequestToApiGateway(request);
-            if(!response_String.contains(";")){
-                System.out.println(response_String);
-                continue;
-            }
+//            String response_String = sendRequestToApiGateway(request);
+//            if(!response_String.contains(";")){
+//                System.out.println(response_String);
+//                continue;
+//            }
 
             String response = sendRequestToApiGateway(request);
 
-//            String[] responseParts = response.split(";", 2);
-//            String responseType = responseParts[0];
-//            String responseData = responseParts.length > 1 ? responseParts[1] : "";
-//
-//            if (responseType.equals("200")) {
-//                if (typ.equals("logowanie") || typ.equals("rejestracja")) {
-//                    obecnyUser = login;
-//                } else if (typ.equals("wgraj_plik") | typ.equals("pobierz_plik")) {
-//                    System.out.println("Przesyłanie pliku powiodło się.");
-//                }
-//            }
-//            if (responseType.equals("299")) {
-//                String[] posts = responseData.split("\t%\t");
-//                for (String post : posts) {
-//                    System.out.println(post);
-//                }
-//                continue;
-//            }
+            String[] responseParts = response.split(";", 2);
+            String responseType = responseParts[0];
+            String responseData = responseParts.length > 1 ? responseParts[1] : "";
+
+            if (responseType.equals("200")) {
+                if (typ.equals("logowanie") || typ.equals("rejestracja")) {
+                    obecnyUser = login;
+                } else if (typ.equals("wgraj_plik") | typ.equals("pobierz_plik")) {
+                    System.out.println("Przesyłanie pliku powiodło się.");
+                }
+            }
+            if (responseType.equals("299")) {
+                String[] posts = responseData.split("\t%\t");
+                for (String post : posts) {
+                    System.out.println(post);
+                }
+                continue;
+            }
             System.out.println(response);
         }
     }

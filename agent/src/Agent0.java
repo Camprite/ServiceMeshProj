@@ -84,29 +84,30 @@ public class Agent0 {
 
                                         String[] requestPartsApi = Apirequest.split(";");
                                         String requestTypeApi = requestPartsApi[0];
-                                        try (Socket socketm = new Socket(managerIp, Integer.parseInt(managerPort));
-                                             PrintWriter outputs = new PrintWriter(socketm.getOutputStream(), true);
-                                             BufferedReader inputer = new BufferedReader(new InputStreamReader(socketm.getInputStream()))) {
-                                        if (requestTypeApi.equals("microserviceadress_request")) {
+                                        String serwis=requestPartsApi[1];
+                                        if(serwis.equals("rejestracja") || serwis.equals("logowanie") || serwis.equals("post") || serwis.equals("czytaj-posts") || serwis.equals("wgraj_plik") || serwis.equals("pobierz_plik")){
 
-                                                System.out.println("[REQUEST FROM API]: " + Apirequest);
-                                                outputs.println(Apirequest +";"+ agentPort); // Wysyła do managera
+                                            try (Socket socketm = new Socket(managerIp, Integer.parseInt(managerPort));
+                                                 PrintWriter outputs = new PrintWriter(socketm.getOutputStream(), true);
+                                                 BufferedReader inputer = new BufferedReader(new InputStreamReader(socketm.getInputStream()))) {
+                                                if (requestTypeApi.equals("microserviceadress_request")) {
+                                                    outputs.println(Apirequest + ";" + agentPort); // Wysyła do managera
+                                                }
+
+
+                                                String responseFromManager = inputer.readLine();
+                                                if (responseFromManager != null) {
+                                                    System.out.println("[RESPONSE FROM MANAGER]: " + responseFromManager);
+                                                    try (Socket ApiSocket = new Socket(ApiIp, Integer.parseInt(ApiPort));
+                                                         BufferedReader inputFromApi = new BufferedReader(new InputStreamReader(ApiSocket.getInputStream()));
+                                                         PrintWriter outputToApi = new PrintWriter(ApiSocket.getOutputStream(), true)) {
+                                                        outputToApi.println(responseFromManager);
+                                                        // Przekazuje odpowiedź z managera do ApiSocket
+                                                    }
+                                                }
                                             }
-
-
-
-                                    String responseFromManager = inputer.readLine();
-                                    if (responseFromManager != null) {
-                                        System.out.println("[RESPONSE FROM MANAGER]: " + responseFromManager);
-                                        try (Socket ApiSocket = new Socket(ApiIp, Integer.parseInt(ApiPort));
-                                             BufferedReader inputFromApi = new BufferedReader(new InputStreamReader(ApiSocket.getInputStream()));
-                                             PrintWriter outputToApi = new PrintWriter(ApiSocket.getOutputStream(), true)) {
-                                        outputToApi.println(responseFromManager);
-                                        // Przekazuje odpowiedź z managera do ApiSocket
-                                    }
-                                }}
-                            }
-                        }}
+                                        }
+                                    } }}
                     } catch (UnknownHostException e) {
                         throw new RuntimeException("Blad+"+e);
                     } catch (IOException e) {

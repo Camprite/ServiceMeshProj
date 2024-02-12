@@ -42,7 +42,11 @@ public class ApiGateway {
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
             String request;
             while ((request = input.readLine()) != null) {
-                System.out.println("[REQUEST FROM CLI]: " + request);
+                String[] parts = request.split(";");
+                String serwis = parts[0];
+                if(serwis.equals("rejestracja") || serwis.equals("logowanie") || serwis.equals("post") || serwis.equals("czytaj-posts") || serwis.equals("wgraj_plik") || serwis.equals("pobierz_plik")){
+
+                    System.out.println("[REQUEST FROM CLI]: " + request);
 
                 String[] requestParts = request.split(";");
                 String requestType = requestParts[0];
@@ -83,7 +87,7 @@ public class ApiGateway {
                     System.err.println("Błąd połączenia z Agentem." + e.getMessage());
                 }
             }
-        } catch (IOException e) {
+        } }catch (IOException e) {
             System.err.println("Błąd wejścia/wyjścia." + e.getMessage());
         } finally {
             try {
