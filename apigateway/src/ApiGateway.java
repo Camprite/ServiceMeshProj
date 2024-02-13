@@ -5,7 +5,7 @@ import java.util.Properties;
 
 
 public class ApiGateway {
-    protected static String[] Parts = {"localhost", "8001"};
+  //  protected static String[] Parts = {"localhost", "8001"};
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage: java ApiGateway <AgentIp> <AgentPort>");
@@ -53,9 +53,9 @@ public class ApiGateway {
 
                 String requestToAgent = "microserviceadress_request" + ";" + requestType;
 
-                try (Socket socket = new Socket(ip, port);
-                     PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
-                     BufferedReader inputAgent = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                    try (Socket socket = new Socket(ip, port);
+                         PrintWriter outputAgent = new PrintWriter(socket.getOutputStream(), true);
+                         BufferedReader inputAgent = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
                     outputAgent.println(requestToAgent);
                     System.out.println("[WYSLANO REQUEST DO AGENTA]");
@@ -64,20 +64,23 @@ public class ApiGateway {
 
                     while (true) {
                         String outputFromAgent = inputAgent.readLine();
-
                         if (outputFromAgent != null) {
-                            try (Socket microserviceSocket = new Socket(Parts[0], Integer.parseInt(Parts[1]));
+                            System.out.println("[REQUEST FROM AGENT] " + outputFromAgent);
+                            String[] Czesci = outputFromAgent.split(";");
+                            try (Socket microserviceSocket = new Socket(Czesci[0], Integer.parseInt(Czesci[1]));
                                  PrintWriter outputMicroservice = new PrintWriter(microserviceSocket.getOutputStream(), true);
                                  BufferedReader inputMicroservice = new BufferedReader(new InputStreamReader(microserviceSocket.getInputStream()))) {
-                                String fromservice;
-
-                                fromservice = inputMicroservice.readLine();
 
                                 outputMicroservice.println(request);
-                                String responseMicroservice = inputMicroservice.readLine();
-
-                                output.println(responseMicroservice);
-                            } catch (IOException e) {
+                                while(true) {
+                                    String responseMicroservice = inputMicroservice.readLine();
+                                    if(responseMicroservice!=null) {
+                                        output.println(responseMicroservice);
+                                        break;
+                                    }
+                                }
+                                break;
+                                }catch (IOException e) {
                                 System.err.println("Błąd połączenia z mikroserwisem." + e.getMessage());
                             }
                         }

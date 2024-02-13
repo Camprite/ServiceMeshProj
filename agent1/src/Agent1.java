@@ -44,13 +44,13 @@ public class Agent1 {
                     System.out.println("Initiation request has been sent to Manager");
                     System.out.print("Response: ");
                     System.out.println(input.readLine());
-
+                    ServerSocket serviceSocket = new ServerSocket(Integer.parseInt(agentPort));
+                    Socket clientSocket = serviceSocket.accept();
+                    PrintWriter serviceOutput = new PrintWriter(clientSocket.getOutputStream(), true);
+                    BufferedReader serviceInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     while (true) {
                         String request;
-                        ServerSocket serviceSocket = new ServerSocket(Integer.parseInt(agentPort));
-                        Socket clientSocket = serviceSocket.accept();
-                        PrintWriter serviceOutput = new PrintWriter(clientSocket.getOutputStream(), true);
-                        BufferedReader serviceInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
                         if ((request = serviceInput.readLine()) != null) {
                             String[] requestParts = request.split(";");
 
@@ -64,7 +64,7 @@ public class Agent1 {
                                 String servicePort = requestParts[3];
 
                                 try {
-                                    String servicePath = System.getProperty("user.dir") + "\\" + name + ".jar";
+                                    String servicePath = System.getProperty("user.dir") + "\\" +name +".jar";
                                     ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIp, agentPort, servicePort, "localhost", "9000");
                                     process = processBuilder.start();
 

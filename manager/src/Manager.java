@@ -180,10 +180,16 @@ public class Manager {
 
                     String agentIp;
                     String agentPorts;
-                    if (serviceName.equals("SerwisLogowania") || serviceName.equals("SerwisRejestracji")) {
+                    if (serviceName.equals("rejestracja") || serviceName.equals("logowanie")) {
+
                         // Jeśli serviceName to login lub rejestracja, wybierz IP i port drugiego agenta
-                        agentIp = agentSockets.keySet().stream().skip(1).findFirst().orElse("localhost");
-                         agentPorts = agentSockets.get(agentIp);
+                       // agentIp = agentSockets.keySet().stream().skip(1).findFirst().orElse("localhost");
+                       //  agentPorts = agentSockets.get(agentIp);
+                      //  agentIp = agentSockets.get(agentPort);
+                        Socket agentSocket = new Socket("localhost", 9011);
+                        PrintWriter out = new PrintWriter(agentSocket.getOutputStream(), true);
+                        out.println("execution_request;" + serviceName + ";" + "localhost" + ";" + ipPort);
+                        out.flush();
                     } else {
                         // W przeciwnym razie wybierz IP i port trzeciego agenta
                        agentIp = agentSockets.keySet().stream().skip(2).findFirst().orElse("localhost");
