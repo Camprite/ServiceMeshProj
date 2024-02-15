@@ -141,12 +141,7 @@ public class Interfejs {
                 }
             }
 
-            String request = typ + ";" + dane;
-//            String response_String = sendRequestToApiGateway(request);
-//            if(!response_String.contains(";")){
-//                System.out.println(response_String);
-//                continue;
-//            }
+            String request = typ + ";" + dane + message_id;
 
             String response = sendRequestToApiGateway(request);
 
@@ -238,7 +233,7 @@ public class Interfejs {
                 output.println(request);
                 String response = input.readLine();
 
-                // Obsługa odpowiedzi i przekazanie ich do interfejsu
+
                 return response;
 
             } catch (IOException e) {
