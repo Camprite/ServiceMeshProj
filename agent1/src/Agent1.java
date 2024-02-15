@@ -67,7 +67,24 @@ public class Agent1 {
                                     String servicePath = System.getProperty("user.dir") + "\\" +name +".jar";
                                     ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIp, agentPort, servicePort, "localhost", "9000");
                                     process = processBuilder.start();
+                                    Thread serviceThread = new Thread(() -> {
+                                        try (Socket service = new Socket(serviceIp, Integer.parseInt(servicePort));
+                                             PrintWriter out = new PrintWriter(service.getOutputStream(), true);
+                                             BufferedReader inp = new BufferedReader(new InputStreamReader(service.getInputStream()))) {
 
+                                            while (true) {
+                                                String serviceRequest = serviceInput.readLine();
+                                                if (serviceRequest != null) {
+                                                    output.println(serviceRequest);
+                                                    break;
+                                                }
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+
+                                    serviceThread.start(); // Uruchamiamy wątek obsługi mikroserwisu
 
 
                                 } catch (Exception e) {
