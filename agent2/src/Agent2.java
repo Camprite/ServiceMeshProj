@@ -37,7 +37,7 @@ public class Agent2 {
                      PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                      BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-                    // Register to Manager request
+
                     output.println("initiation_request" + ';' + agentType + ';' + agentIp + ';' + agentPort);
                     System.out.println("Initiation request has been sent to Manager");
                     System.out.print("Response: ");
@@ -61,9 +61,8 @@ public class Agent2 {
                                 try {
                                     String servicePath = System.getProperty("user.dir") + "\\" + Name + ".jar";
                                     ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath,  agentIp, agentPort, servicePort, "localhost", "9000");
-                                    process = processBuilder.start(); // Zapisujemy referencję do procesu
+                                    process = processBuilder.start();
 
-                                    // Tworzymy nowy wątek do obsługi komunikacji z mikroserwisem
                                     Thread serviceThread = new Thread(() -> {
                                         try (Socket serviceSocket = new Socket(serviceIp, Integer.parseInt(servicePort));
                                              PrintWriter serviceOutput = new PrintWriter(serviceSocket.getOutputStream(), true);
@@ -91,8 +90,8 @@ public class Agent2 {
                                 System.out.println("[REQUEST FROM MANAGER]: " + request);
                                 System.out.println("[REQUEST]: close_microservice request has been detected");
                                 if (process != null) {
-                                    process.destroy(); // Zamykamy proces, jeśli istnieje
-                                    process = null; // Czyścimy referencję
+                                    process.destroy();
+                                    process = null;
                                 }
                             }
                         }

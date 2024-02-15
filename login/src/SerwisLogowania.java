@@ -23,10 +23,10 @@ public class SerwisLogowania {
          portAgent = args[1];
         String port = args[2];
         portClient = port;
-        apiIp = args[3]; // nowy argument ApiIp
-        apiPort = args[4]; // nowy argument ApiPort
+        apiIp = args[3];
+        apiPort = args[4];
 
-        int loginPort = Integer.parseInt(port); // Przypisujemy port z argumentów
+        int loginPort = Integer.parseInt(port);
 
         try (ServerSocket serverSocket = new ServerSocket(loginPort)) {
             while (true) {
@@ -43,7 +43,7 @@ public class SerwisLogowania {
     public static void notifyAgent() {
         try (Socket socket = new Socket(ipAgent, Integer.parseInt(portAgent));
              PrintWriter output = new PrintWriter(socket.getOutputStream(), true)) {
-            output.println("done"); // Wysyłamy informację "done" do agenta
+            output.println("finish_request");
         } catch (IOException e) {
             System.err.println("Błąd podczas wysyłania informacji do agenta: " + e.getMessage());
         }

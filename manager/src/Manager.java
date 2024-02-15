@@ -24,7 +24,7 @@ public class Manager {
 
         System.out.println("[MANAGER]");
 
-        // Thread listening for agents
+
 
         try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(managerPort))) {
             System.out.println("Waiting for agents to connect...");
@@ -37,11 +37,11 @@ public class Manager {
                 BufferedReader input = new BufferedReader(new InputStreamReader(agentSocket.getInputStream()));
                 PrintWriter output = new PrintWriter(agentSocket.getOutputStream(), true);
 
-                // Read initiation request from agent
+
                 String initiationRequest = input.readLine();
 
                 if (initiationRequest != null && initiationRequest.startsWith("initiation_request")) {
-                    // Parse agent information
+
                     String[] requestParts = initiationRequest.split(";");
                     String agentType = requestParts[1];
                     String agentIp = requestParts[2];
@@ -60,7 +60,7 @@ public class Manager {
                     agentSockets.put(agentPort, agentIp);
 
                     System.out.println("Agent " + agentType + " connected. IP: " + agentIp + ", Port: " + agentPort);
-                    // Check if all agent types have been received, then break the loop
+
                     if (agentType0Received && agentType1Received && agentType2Received) {
                         break;
                     }
@@ -73,7 +73,6 @@ public class Manager {
             System.err.println("Error occurred while listening for agents: " + e.getMessage());
         }
 
-        // Starting request processing thread
         try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(managerPort))) {
             System.out.println("Waiting for requests from agents...");
 
@@ -92,18 +91,16 @@ public class Manager {
                     if(serwis.equals("rejestracja") || serwis.equals("logowanie") || serwis.equals("post") || serwis.equals("czytaj-posts") || serwis.equals("wgraj_plik") || serwis.equals("pobierz_plik")){
 
                         processRequest(agentPort, request, serverSocket, output);
-                        //Zabezpieczenie poki nie ma id wiadomosci
+
                     }
                 }
-              //  checkMicroservicesStatus();
+                checkMicroservicesStatus();
             }
         } catch (IOException e) {
             throw new RuntimeException("Error occurred while listening for requests from agents: " + e.getMessage());
         }
 
 
-
-        // Check microservices status and close if necessary
 
     }
 
@@ -143,8 +140,8 @@ public class Manager {
                     String agent0Ip = agentSockets.keySet().iterator().next();
                     String agent0Port = agentSockets.get(agent0Ip);
                     Socket agent0Socket = new Socket(agent0Ip, Integer.parseInt(agent0Port));
-                     output = new PrintWriter(agent0Socket.getOutputStream(), true);
-                   output.println("microserviceadress_request;" + ip + ";" + port);
+                    output = new PrintWriter(agent0Socket.getOutputStream(), true);
+                    output.println("microserviceadress_request;" + ip + ";" + port);
                     output.flush();
 
                     String agentIp = agentSockets.get(agentPort);
@@ -153,7 +150,8 @@ public class Manager {
                     out.println("execution_request;" + serviceName + ";" + ip + ";" + port);
                     out.flush();
 
-                    microservices.put(serviceName, "busy");
+                   microservices.put(serviceName, "busy");
+
                 } else if (requestType.equals("finish_request")) {
                     serviceName = requestParts[1];
                     String portToFree = requestParts[3];
@@ -182,16 +180,13 @@ public class Manager {
                     String agentPorts;
                     if (serviceName.equals("rejestracja") || serviceName.equals("logowanie")) {
 
-                        // Jeśli serviceName to login lub rejestracja, wybierz IP i port drugiego agenta
-                       // agentIp = agentSockets.keySet().stream().skip(1).findFirst().orElse("localhost");
-                       //  agentPorts = agentSockets.get(agentIp);
-                      //  agentIp = agentSockets.get(agentPort);
+
                         Socket agentSocket = new Socket("localhost", 9011);
                         PrintWriter out = new PrintWriter(agentSocket.getOutputStream(), true);
                         out.println("execution_request;" + serviceName + ";" + "localhost" + ";" + ipPort);
                         out.flush();
                     } else {
-                        // W przeciwnym razie wybierz IP i port trzeciego agenta
+
                        agentIp = agentSockets.keySet().stream().skip(2).findFirst().orElse("localhost");
                          agentPorts = agentSockets.get(agentIp);
                     }

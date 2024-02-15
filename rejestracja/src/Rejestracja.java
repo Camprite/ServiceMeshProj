@@ -48,23 +48,17 @@ public class Rejestracja implements Runnable {
                         insertUserStatement.setString(2, password);
                         insertUserStatement.executeUpdate();
 
-                        output.write("Pomyślnie zarejestrowano. Gratuluję.");
-                    }
-                }
+                    output.write("200: Pomyślnie zarejestrowano");
                     SerwisRejestracji.notifyAgent();
                     break;
+                     }
+                }
 
             }
-        } catch (SQLException e) {
+            } catch (IOException | SQLException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            System.err.println("Błąd " + e.getMessage());
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                System.err.println("Błąd " + e.getMessage());
-            }
         }
-    }
-}
+        }
+       }
+
+

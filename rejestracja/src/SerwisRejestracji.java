@@ -18,7 +18,7 @@ public class SerwisRejestracji {
         if (args.length < 4) {
             System.out.println("Nieprawidłowa liczba argumentów.");
             System.out.println("Usage: java SerwisRejestracji <ipAgent> <portAgent> <port> <ip>");
-            return;
+           // return;
         }
 
         System.out.println("Rejestracja");
@@ -27,29 +27,18 @@ public class SerwisRejestracji {
         String port = args[2];
         portClient = port;
         apiIp = args[3];
-        apiPort = args[4];
-
+        //apiPort = args[4];
+        int Port = Integer.parseInt(args[4]);
         int registrationPort = Integer.parseInt(port);
         String ipAgent = args[0];
         int portAgent = Integer.parseInt(args[1]);
-        int Port = Integer.parseInt(args[2]);
+      //  int Port = Integer.parseInt(args[2]);
         String ip = args[3];
 
-        try (ServerSocket serverSocket = new ServerSocket(registrationPort)) {
+        try (ServerSocket serverSocket = new ServerSocket(Port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 new Thread(new Rejestracja(clientSocket)).start();
-                try {
-                    // Nawiąż połączenie z ApiGateway
-                    try (Socket socket = new Socket(ip, Port)) {
-                        PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-                        // Wyślij wiadomość do ApiGateway
-                        output.println("Udana rejestracja!");
-                    }
-                } catch (IOException e) {
-                    System.err.println("Błąd " + e.getMessage());
-                }
-
             }
 
 
@@ -62,16 +51,10 @@ public class SerwisRejestracji {
     public static void notifyAgent() {
         try (Socket socket = new Socket(ipAgent, Integer.parseInt(String.valueOf(portAgent)));
              PrintWriter output = new PrintWriter(socket.getOutputStream(), true)) {
-            output.println("finish_request"); // Wysyłamy informację "done" do agenta
+            output.println("finish_request");
         } catch (IOException e) {
             System.err.println("Błąd podczas wysyłania informacji do agenta: " + e.getMessage());
         }
-        try (Socket socket = new Socket(apiIp, Integer.parseInt(apiPort));
-             PrintWriter output = new PrintWriter(socket.getOutputStream(), true)) {
-            output.println("200: Pomyślnie zarejestrowano"); // Wysyłamy informację "" do api
-        } catch (IOException e) {
-            System.err.println("Błąd podczas wysyłania informacji do agenta: " + e.getMessage());
-            System.err.println("Błąd podczas komunikacji z ApiGateway: " + e.getMessage());
-        }
+
     }
 }

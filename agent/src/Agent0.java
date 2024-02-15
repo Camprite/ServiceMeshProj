@@ -42,7 +42,6 @@ public class Agent0 {
                      PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
                      BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-                    // Register to Manager request
                     output.println("initiation_request" + ';' + agentType + ';' + agentIp + ';' + agentPort);
                     System.out.println("Initiation request has been sent to Manager, agent on " + agentIp + agentPort);
 
@@ -61,7 +60,7 @@ public class Agent0 {
                                     String servicePath = System.getProperty("user.dir") + "\\" + "apigateway" + ".jar";
                                     ProcessBuilder processBuilder = new ProcessBuilder("cmd", "/c", "start", "java", "-jar", servicePath, agentIp, agentPort);
                                     Process process = processBuilder.start();
-                                    break; // Zakończ pętlę po uruchomieniu procesu
+                                    break;
                                 } catch (Exception e) {
                                     System.out.println("[AGENT FAILED] Processbuilder failed");
                                     System.out.println(e.getMessage());
@@ -85,7 +84,7 @@ public class Agent0 {
                                         String[] requestPartsApi = Apirequest.split(";");
                                         String requestTypeApi = requestPartsApi[0];
                                         String serwis=requestPartsApi[1];
-                                      //  if(serwis.equals("rejestracja") || serwis.equals("logowanie") || serwis.equals("post") || serwis.equals("czytaj-posts") || serwis.equals("wgraj_plik") || serwis.equals("pobierz_plik")) {
+
 
                                             try (Socket socketm = new Socket(managerIp, Integer.parseInt(managerPort));
                                                  PrintWriter outputs = new PrintWriter(socketm.getOutputStream(), true);
@@ -98,15 +97,13 @@ public class Agent0 {
                                                 String responseFromManager = inputer.readLine();
                                                 if (responseFromManager != null) {
                                                     System.out.println("[RESPONSE FROM MANAGER]: " + responseFromManager);
-                                                   // try (Socket ApiSocket = new Socket(ApiIp, Integer.parseInt(ApiPort));
-                                                      //   BufferedReader inputFromApi = new BufferedReader(new InputStreamReader(ApiSocket.getInputStream()));
-                                                        //PrintWriter outputToApi = new PrintWriter(ApiSocket.getOutputStream(), true)) {
+
                                                         outputToClient.println(responseFromManager);
-                                                        // Przekazuje odpowiedź z managera do ApiSocket
+
                                                     }
                                                 }
                                             }
-                                       // }
+
                                     } }}
                     } catch (UnknownHostException e) {
                         throw new RuntimeException("Blad+"+e);

@@ -41,7 +41,7 @@ public class SerwisPostow {
     public static void notifyAgent() {
         try (Socket socket = new Socket(apiIp, Integer.parseInt(apiPort));
              PrintWriter output = new PrintWriter(socket.getOutputStream(), true)) {
-            output.println("done"); // Wysyłamy informację "done" do agenta
+            output.println("finish_request");
         } catch (IOException e) {
             System.err.println("Błąd podczas wysyłania informacji do agenta: " + e.getMessage());
         }

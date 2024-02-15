@@ -70,14 +70,6 @@ public class Agent1 {
 
 
 
-                                 //   String messageFromService = serviceInput.readLine();
-                                  //  System.out.println("Message from Service: " + messageFromService);
-
-                                    // Zamknięcie połączenia
-                                 //   serviceOutput.close();
-                                  //  serviceInput.close();
-                                //    serviceSocket.close();
-
                                 } catch (Exception e) {
                                     System.out.println("[AGENT FAILED] Processbuilder failed");
                                     System.out.println(e.getMessage());
@@ -99,7 +91,7 @@ public class Agent1 {
                     throw new RuntimeException(e);
                 }
             } finally {
-                // Dodatkowe czynności do wykonania po zakończeniu wątku
+
             }
 
         });

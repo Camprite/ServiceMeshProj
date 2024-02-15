@@ -39,11 +39,10 @@ public class SerwisPlikow {
             System.err.println("500;File Service ERROR." + e.getMessage());
         }
     }
-        // Tworzenie wątku do komunikacji z agentem
         public static void notifyAgent() {
             try (Socket socket = new Socket(ipAgent, Integer.parseInt(portAgent));
                  PrintWriter output = new PrintWriter(socket.getOutputStream(), true)) {
-                output.println("done"); // Wysyłamy informację "done" do agenta
+                output.println("finish_request");
             } catch (IOException e) {
                 System.err.println("Błąd podczas wysyłania informacji do agenta: " + e.getMessage());
             }

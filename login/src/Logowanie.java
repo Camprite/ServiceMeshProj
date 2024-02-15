@@ -20,13 +20,13 @@ public class Logowanie implements Runnable {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String requestString = input.readLine(); // Odczytujemy żądanie od klienta
+            String requestString = input.readLine();
 
             if (requestString.split(";").length != 2) {
                 String errorMessage = "Nieprawidłowe dane uwierzytelniające.";
                 output.println(errorMessage);
                 output.flush();
-                SerwisLogowania.notifyAgent(); // Powiadom agenta o zakończeniu obsługi klienta
+                SerwisLogowania.notifyAgent();
                 return;
             }
 
@@ -39,7 +39,7 @@ public class Logowanie implements Runnable {
 
                 if (resultSet.next()) {
                     if (resultSet.getString("password").equals(password)) {
-                        String successMessage = "Zalogowano!";
+                        String successMessage = "200: Pomyślnie zalogowano!";
                         output.println(successMessage);
                     } else {
                         String errorMessage = "Błędne hasło.";
@@ -50,7 +50,7 @@ public class Logowanie implements Runnable {
                     output.println(errorMessage);
                 }
                 output.flush();
-                SerwisLogowania.notifyAgent(); // Powiadom agenta o zakończeniu obsługi klienta
+                SerwisLogowania.notifyAgent();
             } catch (SQLException e) {
                 System.err.println("Błąd.");
                 e.printStackTrace();
